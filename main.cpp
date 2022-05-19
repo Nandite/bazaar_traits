@@ -24,26 +24,16 @@ int main() {
     static_assert(bzt::is_rvalue_reference_v<Tp&&>);
     static_assert(bzt::is_rvalue_reference_v<Tp>);
 
-    static_assert(bzt::is_assignable_v<int,int>);
-    static_assert(std::is_assignable_v<int,int>);
+    static_assert(bzt::is_assignable_v<int,int> == std::is_assignable_v<int,int>);
+    static_assert(bzt::is_assignable_v<int&, const int> == std::is_assignable_v<int &, const int>);
+    static_assert(std::is_arithmetic_v<int> == bzt::is_arithmetic_v<int>);
+    static_assert(std::is_arithmetic_v<float> == bzt::is_arithmetic_v<float>);
+    static_assert(std::is_arithmetic_v<Tp> == bzt::is_arithmetic_v<Tp>);
+    static_assert(std::is_class_v<int> == bzt::is_class_v<int>);
+    static_assert(std::is_class_v<Tp> == bzt::is_class_v<Tp>);
 
-    static_assert(bzt::is_assignable_v<int&, const int>);
-    static_assert(std::is_assignable_v<int &, const int>);
-
-    static_assert(std::is_arithmetic_v<int>);
-    static_assert(std::is_arithmetic_v<float>);
-
-    static_assert(bzt::is_arithmetic_v<int>);
-    static_assert(bzt::is_arithmetic_v<float>);
-
-    static_assert(std::is_arithmetic_v<Tp>);
-    static_assert(bzt::is_arithmetic_v<Tp>);
-
-    static_assert(std::is_class_v<int>);
-    static_assert(bzt::is_class_v<int>);
-
-    static_assert(std::is_class_v<Tp>);
-    static_assert(bzt::is_class_v<Tp>);
+    static_assert(std::is_swappable_v<int>);
+    static_assert(bzt::is_swappable_v<int>);
 
     return 0;
 }
