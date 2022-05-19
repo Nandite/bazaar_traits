@@ -5,7 +5,7 @@
 #ifndef BAZAAR_LOGICAL_OPERATORS_HPP
 #define BAZAAR_LOGICAL_OPERATORS_HPP
 
-#include "bazaar_traits.hpp"
+#include "helper_traits.hpp"
 
 namespace bazaar::traits
 {

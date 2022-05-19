@@ -4,8 +4,7 @@
 
 #pragma once
 
-
-#include "arithmetic.hpp"
+#include "logical_operators.hpp"
 
 namespace bazaar::traits {
 
