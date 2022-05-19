@@ -26,7 +26,10 @@ namespace bazaar::traits
     }
 
     template<typename ... Bn>
-    [[maybe_unused]] inline constexpr auto conjunction_v{impl::conjunction_impl<Bn...>::value};
+    struct conjunction : public impl::conjunction_impl<Bn...>{};
+
+    template<typename ... Bn>
+    [[maybe_unused]] inline constexpr auto conjunction_v{conjunction<Bn...>::value};
 
     // Disjunction
     namespace impl
@@ -43,7 +46,10 @@ namespace bazaar::traits
     }
 
     template<typename ... Bn>
-    [[maybe_unused]] inline constexpr auto disjunction_v {impl::disjunction_impl<Bn...>::value};
+    struct disjunction : public impl::disjunction_impl<Bn...>{};
+
+    template<typename ... Bn>
+    [[maybe_unused]] inline constexpr auto disjunction_v {disjunction<Bn...>::value};
 
     // Negation
     namespace impl
@@ -53,7 +59,10 @@ namespace bazaar::traits
     }
 
     template<typename B>
-    [[maybe_unused]] inline constexpr auto negation_v {impl::negation_impl<B>::value};
+    struct negation : public impl::negation_impl<B>{};
+
+    template<typename B>
+    [[maybe_unused]] inline constexpr auto negation_v {negation<B>::value};
 }
 
 #endif //BAZAAR_LOGICAL_OPERATORS_HPP
