@@ -22,6 +22,22 @@ namespace bazaar
     template <bool, class T = void> struct enable_if;
     template <bool, class T, class F> struct conditional;
 
+    // Reference transformations:
+    template <class T> struct remove_reference;
+    template <class T> struct add_lvalue_reference;
+    template <class T> struct add_rvalue_reference;
+
+    // Const-volatile properties and transformations:
+    template <class T> struct is_const;
+    template <class T> struct is_volatile;
+    template <class T> struct remove_const;
+    template <class T> struct remove_volatile;
+    template <class T> struct remove_cv;
+    template <class T> struct add_const;
+    template <class T> struct add_volatile;
+    template <class T> struct add_cv;
+    template <class T, class U> apply_cv;
+
     // Primary classification traits:
     template <class T> struct is_void;
     template <class T> struct is_null_pointer;  // C++14
@@ -47,21 +63,6 @@ namespace bazaar
     template <class T> struct is_scalar;
     template <class T> struct is_object;
     template <class T> struct is_compound;
-
-    // Const-volatile properties and transformations:
-    template <class T> struct is_const;
-    template <class T> struct is_volatile;
-    template <class T> struct remove_const;
-    template <class T> struct remove_volatile;
-    template <class T> struct remove_cv;
-    template <class T> struct add_const;
-    template <class T> struct add_volatile;
-    template <class T> struct add_cv;
-
-    // Reference transformations:
-    template <class T> struct remove_reference;
-    template <class T> struct add_lvalue_reference;
-    template <class T> struct add_rvalue_reference;
 
     // Pointer transformations:
     template <class T> struct remove_pointer;
