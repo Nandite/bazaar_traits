@@ -55,7 +55,7 @@ namespace bazaar::traits
     namespace impl
     {
         template<typename B>
-        struct negation_impl : public not_bool_constant_t<B> {};
+        struct negation_impl : public invert_bool_constant_t<B> {};
     }
 
     template<typename B>

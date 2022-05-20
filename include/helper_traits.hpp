@@ -5,7 +5,7 @@
 #ifndef HELPER_TRAITS_HPP
 #define HELPER_TRAITS_HPP
 
-#include "arithmetic.hpp"
+#include "integral_constant.hpp"
 
 namespace bazaar::traits
 {
@@ -21,10 +21,10 @@ namespace bazaar::traits
     //-------------------------------------------------------------------------------------------
 
     // Enable_if
-    template<bool, class Tp = void>
+    template<bool, typename Tp = void>
     struct enable_if : public identity<Tp> {};
 
-    template<class Tp>
+    template<typename Tp>
     struct enable_if<false, Tp> {};
 
     template<bool Condition, typename Tp>
@@ -63,10 +63,10 @@ namespace bazaar::traits
     }
 
     template<typename Tp, typename Up>
-    using is_same = impl::is_same_impl<Tp,Up>;
+    struct is_same : public impl::is_same_impl<Tp,Up> {};
 
     template<typename Tp, typename Up>
-    using is_not_same = not_bool_constant_t<typename impl::is_same_impl<Tp,Up>::type>;
+    using is_not_same = invert_bool_constant_t<typename impl::is_same_impl<Tp,Up>::type>;
 
     template<typename Tp, typename Up>
     inline constexpr bool is_same_v = is_same<Tp, Up>::value;
