@@ -1108,4 +1108,61 @@ namespace bazaar::traits {
 
     template<typename From, typename To>
     [[maybe_unused]] static constexpr auto is_no_throw_convertible_v{is_no_throw_convertible<From, To>::value};
+
+    // TODO
+    /*
+        template <class Fn, class... ArgTypes> struct is_invocable;
+        template <class R, class Fn, class... ArgTypes> struct is_invocable_r;
+        template <class Fn, class... ArgTypes> struct is_nothrow_invocable;
+        template <class R, class Fn, class... ArgTypes> struct is_nothrow_invocable_r;
+     */
+
+    // Alignment of
+    template<typename Tp>
+    struct alignment_of : public integral_constant<std::size_t, alignof(Tp)> {};
+
+    template<typename Tp>
+    [[maybe_unused]] static constexpr auto alignment_of_v{alignment_of<Tp>::value};
+
+    // Decay
+    namespace impl
+    {
+        template<typename Tp>
+        struct decay_impl{
+        private:
+            using Up = remove_reference_t<Tp>;
+        public:
+            using type = conditional_t<is_array_v<Tp>,
+                    remove_extent_t<Tp> *,
+                    conditional_t<is_function_v<Tp>,
+                            add_pointer_t<Tp>,
+                            remove_cv_t<Tp>>>;
+        };
+    }
+
+    template<typename Tp>
+    struct decay : public impl::decay_impl<Tp> {};
+
+    template<typename Tp>
+    using decay_t [[maybe_unused]] = typename decay<Tp>::type;
+
+    // Underlying type
+    namespace impl
+    {
+        template<typename Tp, bool = is_enum_v<Tp>> struct underlying_type_impl {};
+
+        template<typename Tp>
+        struct underlying_type_impl<Tp, true> : public identity<__underlying_type(Tp)> {};
+    }
+
+    template<typename Tp>
+    struct underlying_type : public impl::underlying_type_impl<Tp> {};
+
+    template<typename Tp>
+    using underlying_type_t [[maybe_unused]] = typename underlying_type<Tp>::type;
+
+    // TODO
+    /* template <class Fn, class... ArgTypes> struct invoke_result; */
+
+
 }
