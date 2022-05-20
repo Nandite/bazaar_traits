@@ -1038,6 +1038,10 @@ namespace bazaar::traits {
     [[maybe_unused]] static constexpr
     auto has_unique_object_representations_v{has_unique_object_representations<Tp>::value};
 
+    //-------------------------------------------------------------------------------------------
+    // Relationships between types
+    //-------------------------------------------------------------------------------------------
+
     // Is base of
     template<typename Base, typename Derived>
     struct is_base_of : public bool_constant<__is_base_of(Base, Derived)>{};
@@ -1074,4 +1078,34 @@ namespace bazaar::traits {
 
     template<typename From, typename To>
     [[maybe_unused]] static constexpr auto is_convertible_v{is_convertible<From, To>::value};
+
+    // Is no throw convertible
+    namespace impl
+    {
+        template<typename ConvertTo> static void test_no_throw_convertibility(ConvertTo) noexcept{};
+        template<typename ConvertFrom, typename ConvertTo>
+        using is_no_throw_convertible_helper_t = decltype(noexcept(
+                test_no_throw_convertibility<ConvertTo>(std::declval<ConvertFrom>())));
+
+        template<typename, typename, typename = void>
+        struct is_no_throw_convertible_from_to : public false_type{};
+
+        template<typename From, typename To>
+        struct is_no_throw_convertible_from_to<From,To, void_t<is_no_throw_convertible_helper_t<From,To>>> :
+                public true_type {};
+
+        template<typename From, typename To,
+                bool = disjunction_v<is_void<From>, is_function<To>, is_array<To>>>
+        struct is_no_throw_convertible_impl : public is_void<To>{};
+
+        template<typename From, typename To>
+        struct is_no_throw_convertible_impl<From, To, false> :
+                public is_no_throw_convertible_from_to<From,To> {};
+    }
+
+    template<typename From, typename To>
+    struct is_no_throw_convertible : public impl::is_no_throw_convertible_impl<From, To>::type {};
+
+    template<typename From, typename To>
+    [[maybe_unused]] static constexpr auto is_no_throw_convertible_v{is_no_throw_convertible<From, To>::value};
 }

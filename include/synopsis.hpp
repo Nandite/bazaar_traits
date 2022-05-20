@@ -135,9 +135,7 @@ namespace bazaar
     template<class T> struct has_unique_object_representations;         // C++17
 
     // Relationships between types:
-    template <class T, class U> struct is_same;
     template <class Base, class Derived> struct is_base_of;
-
     template <class From, class To> struct is_convertible;
     template <typename From, typename To> struct is_nothrow_convertible;                  // C++20
     template <typename From, typename To> inline constexpr bool is_nothrow_convertible_v; // C++20
@@ -158,8 +156,6 @@ namespace bazaar
     template <class T> struct decay;
     template <class... T> struct common_type;
     template <class T> struct underlying_type;
-    template <class> class result_of; // undefined; deprecated in C++17; removed in C++20
-    template <class Fn, class... ArgTypes> class result_of<Fn(ArgTypes...)>; // deprecated in C++17; removed in C++20
     template <class Fn, class... ArgTypes> struct invoke_result;  // C++17
 
     // const-volatile modifications:
