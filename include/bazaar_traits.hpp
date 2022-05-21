@@ -710,14 +710,20 @@ namespace bazaar::traits {
     }
 
     template<typename Tp, typename ... Args>
-    struct is_constructible : public impl::is_constructible_impl<Tp, Args...> {};
+    struct is_constructible : public impl::is_constructible_impl<Tp, Args...> {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp, typename ... Args>
     [[maybe_unused]] inline constexpr auto is_constructible_v = is_constructible<Tp, Args...>::value;
 
-    //Is default constructible
+    // Is default constructible
     template<typename Tp>
-    struct is_default_constructible : public is_constructible<Tp>{};
+    struct is_default_constructible : public is_constructible<Tp>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_default_constructible_v = is_default_constructible<Tp>::value;
@@ -725,7 +731,10 @@ namespace bazaar::traits {
     // Is copy constructible
     template<typename Tp>
     struct is_copy_constructible : public is_constructible<Tp,
-                add_lvalue_reference_t<add_const_t<Tp>>>{};
+                add_lvalue_reference_t<add_const_t<Tp>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_copy_constructible_v = is_copy_constructible<Tp>::value;
@@ -733,7 +742,10 @@ namespace bazaar::traits {
     // Is move constructible
     template<typename Tp>
     struct is_move_constructible : public is_constructible<Tp,
-            add_rvalue_reference_t<Tp>>{};
+            add_rvalue_reference_t<Tp>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_move_constructible_v = is_move_constructible<Tp>::value;
@@ -785,7 +797,10 @@ namespace bazaar::traits {
     // Is copy assignable
     template<typename Tp>
     struct is_copy_assignable : public is_assignable<add_lvalue_reference_t<Tp>,
-            add_const_t<add_lvalue_reference_t<Tp>>>::type {};
+            add_const_t<add_lvalue_reference_t<Tp>>>::type {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr auto is_copy_assignable_v {is_copy_assignable<Tp>::value};
@@ -793,7 +808,10 @@ namespace bazaar::traits {
     // Is move assignable
     template<typename Tp>
     struct is_move_assignable : public is_assignable<add_lvalue_reference_t<Tp>,
-            add_rvalue_reference_t<Tp>>::type{};
+            add_rvalue_reference_t<Tp>>::type{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr auto is_move_assignable_v{is_move_assignable<Tp>::value};
@@ -815,7 +833,12 @@ namespace bazaar::traits {
     template<typename Tp, typename Up>
     struct is_swappable_with : public conjunction<
             impl::is_swappable_with_impl<Tp, Up>
-            > {};
+            > {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+        static_assert(impl::is_complete_or_unbounded_v<Up>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp, typename Up>
     [[maybe_unused]] static constexpr auto is_swappable_with_v{is_swappable_with<Tp,Up>::value};
@@ -826,7 +849,10 @@ namespace bazaar::traits {
             impl::is_referenceable<Tp>,
             negation<is_void<Tp>>,
             is_swappable_with<add_lvalue_reference_t<Tp>,
-                    add_lvalue_reference_t<Tp>>>{};
+                    add_lvalue_reference_t<Tp>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     // Alternate
 //    template<typename Tp>
@@ -835,7 +861,10 @@ namespace bazaar::traits {
 //            typename is_swappable_with<add_lvalue_reference_t<Tp>,
 //                add_lvalue_reference_t<Tp>>::type,
 //            false_type
-//            >{};
+//            >{
+//        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+//                      "Template argument must be a complete type or an unbounded array");
+//    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr auto is_swappable_v{is_swappable<Tp>::value};
@@ -861,7 +890,10 @@ namespace bazaar::traits {
                 negation<is_void<Tp>>,
                 negation<is_function<Tp>>,
                 negation<is_unbounded_array<Tp>>,
-                impl::is_destructible_impl<remove_all_extents_t<Tp>>>>{};
+                impl::is_destructible_impl<remove_all_extents_t<Tp>>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr auto is_destructible_v{is_destructible<Tp>::value};
@@ -869,8 +901,10 @@ namespace bazaar::traits {
     // Is trivially constructible
     template<typename Tp, typename ... Args>
     struct is_trivially_constructible : public bool_constant<
-            __is_trivially_constructible(Tp, Args...)
-            >{};
+            __is_trivially_constructible(Tp, Args...)>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+            };
 
     template<typename Tp, typename ... Args>
     [[maybe_unused]] static constexpr
@@ -878,7 +912,10 @@ namespace bazaar::traits {
 
     // Is trivially default constructible
     template<typename Tp>
-    struct is_trivially_default_constructible : public is_trivially_constructible<Tp>{};
+    struct is_trivially_default_constructible : public is_trivially_constructible<Tp>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -887,7 +924,10 @@ namespace bazaar::traits {
     // Is trivially copy constructible
     template<typename Tp>
     struct is_trivially_copy_constructible : public
-            is_trivially_constructible<Tp, add_lvalue_reference_t<add_const_t<Tp>>>{};
+            is_trivially_constructible<Tp, add_lvalue_reference_t<add_const_t<Tp>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -896,7 +936,10 @@ namespace bazaar::traits {
     // Is trivially move constructible
     template<typename Tp>
     struct is_trivially_move_constructible : public
-            is_trivially_constructible<Tp, add_rvalue_reference_t<Tp>>{};
+            is_trivially_constructible<Tp, add_rvalue_reference_t<Tp>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -904,7 +947,10 @@ namespace bazaar::traits {
 
     // Is trivially assignable
     template<typename Tp, typename Up>
-    struct is_trivially_assignable : public bool_constant<__is_trivially_assignable(Tp, Up)>{};
+    struct is_trivially_assignable : public bool_constant<__is_trivially_assignable(Tp, Up)>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp, typename Up>
     [[maybe_unused]] static constexpr
@@ -914,7 +960,10 @@ namespace bazaar::traits {
     template<typename Tp>
     struct is_trivially_copy_assignable : public
             is_trivially_assignable<add_lvalue_reference_t<Tp>,
-            add_lvalue_reference_t<add_const_t<Tp>>>{};
+            add_lvalue_reference_t<add_const_t<Tp>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -924,7 +973,10 @@ namespace bazaar::traits {
     template<typename Tp>
     struct is_trivially_move_assignable : public
             is_trivially_assignable<add_lvalue_reference_t<Tp>,
-            add_rvalue_reference_t<Tp>>{};
+            add_rvalue_reference_t<Tp>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -933,7 +985,10 @@ namespace bazaar::traits {
     // Is trivially destructible
     template<typename Tp>
     struct is_trivially_destructible : public conjunction<bool_constant<is_destructible_v<Tp>>,
-            bool_constant<__has_trivial_destructor(Tp)>>{};
+            bool_constant<__has_trivial_destructor(Tp)>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+            };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -942,11 +997,16 @@ namespace bazaar::traits {
     // Is trivially copyable
 #if (__has_feature(is_trivially_copyable) || defined(_LIBCPP_COMPILER_GCC))
     template <typename Tp>
-    struct is_trivially_copyable : public bool_constant<__is_trivially_copyable(Tp)> {};
+    struct is_trivially_copyable : public bool_constant<__is_trivially_copyable(Tp)> {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                "Template argument must be a complete type or an unbounded array");
+    };
 #else
     template<typename Tp>
     struct is_trivially_copyable
     {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
     private:
         using Up = remove_all_extents_t<remove_const_t<Tp>>;
         using has_trivial_copy_constructor = is_trivially_copy_constructible<Up>;
@@ -974,11 +1034,17 @@ namespace bazaar::traits {
     // Is trivial
 #if (__has_feature(is_trivial) || defined(_LIBCPP_COMPILER_GCC))
     template<typename Tp>
-    struct is_trivial : public bool_constant<__is_trivial(Tp)> {};
+    struct is_trivial : public bool_constant<__is_trivial(Tp)> {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                "Template argument must be a complete type or an unbounded array");
+    };
 #else
     template <typename Tp>
     struct is_trivial : public disjunction<is_scalar<Tp>,
-            conjunction<is_trivially_copyable<Tp>, is_trivially_default_constructible<Tp>>>{};
+            conjunction<is_trivially_copyable<Tp>, is_trivially_default_constructible<Tp>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 #endif
 
     template<typename Tp>
@@ -987,10 +1053,16 @@ namespace bazaar::traits {
     // Is standard layout
 #if (__has_feature(is_standard_layout) || defined(_LIBCPP_COMPILER_GCC))
     template<typename Tp>
-    struct is_standard_layout : public bool_constant<__is_standard_layout(Tp)> {};
+    struct is_standard_layout : public bool_constant<__is_standard_layout(Tp)> {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                "Template argument must be a complete type or an unbounded array");
+    };
 #else
     template<typename Tp>
-    struct is_standard_layout : public is_scalar<remove_all_extents_t<Tp>>{};
+    struct is_standard_layout : public is_scalar<remove_all_extents_t<Tp>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 #endif
 
     template<typename Tp>
@@ -1059,42 +1131,54 @@ namespace bazaar::traits {
 
     // Is no throw constructible
     template<typename Tp, typename ... Args>
-    struct is_now_throw_constructible : public bool_constant<__is_nothrow_constructible(Tp, Args...)>{};
+    struct is_nothrow_constructible : public bool_constant<__is_nothrow_constructible(Tp, Args...)>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp, typename ... Args>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_constructible_v{is_now_throw_constructible<Tp, Args...>::value};
+    auto is_nothrow_constructible_v{is_nothrow_constructible<Tp, Args...>::value};
 
     // Is no throw default constructible
     template<typename Tp>
-    struct is_no_throw_default_constructible :
-            public bool_constant<is_no_throw_constructible_v<Tp>>{};
+    struct is_nothrow_default_constructible :
+            public bool_constant<is_nothrow_constructible_v<Tp>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_default_constructible_v{is_no_throw_default_constructible<Tp>::value};
+    auto is_nothrow_default_constructible_v{is_nothrow_default_constructible<Tp>::value};
 
     // Is no throw copy constructible
     template<typename Tp>
-    struct is_no_throw_copy_constructible :
-            public bool_constant<is_no_throw_constructible_v< Tp,
+    struct is_nothrow_copy_constructible :
+            public bool_constant<is_nothrow_constructible_v< Tp,
             add_lvalue_reference_t<add_const<Tp>>
-            >>{};
+            >>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_copy_constructible_v{is_no_throw_copy_constructible<Tp>::value};
+    auto is_nothrow_copy_constructible_v{is_nothrow_copy_constructible<Tp>::value};
 
     // Is no throw move constructible
     template<typename Tp>
-    struct is_no_throw_move_constructible :
-            public bool_constant<is_no_throw_constructible_v< Tp,
+    struct is_nothrow_move_constructible :
+            public bool_constant<is_nothrow_constructible_v< Tp,
                     add_rvalue_reference_t<Tp>
-            >>{};
+            >>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_move_constructible_v{is_no_throw_move_constructible<Tp>::value};
+    auto is_nothrow_move_constructible_v{is_nothrow_move_constructible<Tp>::value};
 
     // Is no throw assignable
     namespace impl
@@ -1111,70 +1195,87 @@ namespace bazaar::traits {
     }
 
     template<typename Tp, typename Up>
-    struct is_no_throw_assignable : public conjunction<
+    struct is_nothrow_assignable : public conjunction<
             is_assignable<Tp,Up>,
             impl::is_no_throw_assignable_impl<Tp, Up>
-            > {};
+            > {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp, typename Up>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_assignable_v{is_no_throw_assignable<Tp, Up>::value};
+    auto is_nothrow_assignable_v{is_nothrow_assignable<Tp, Up>::value};
 
     // Is no throw copy assignable
     template<typename Tp>
-    struct is_no_throw_copy_assignable : public
-            is_no_throw_assignable<std::add_lvalue_reference_t<Tp>,
+    struct is_nothrow_copy_assignable : public
+            is_nothrow_assignable<std::add_lvalue_reference_t<Tp>,
             add_lvalue_reference_t<add_const_t<Tp>>
-            >{};
+            >{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_copy_assignable_v{is_no_throw_copy_assignable<Tp>::value};
+    auto is_nothrow_copy_assignable_v{is_nothrow_copy_assignable<Tp>::value};
 
     // Is no throw move assignable
     template<typename Tp>
-    struct is_no_throw_move_assignable : public
-            is_no_throw_assignable<std::add_lvalue_reference_t<Tp>,
-            add_rvalue_reference_t<Tp>> {};
+    struct is_nothrow_move_assignable : public
+            is_nothrow_assignable<std::add_lvalue_reference_t<Tp>,
+            add_rvalue_reference_t<Tp>> {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_move_assignable_v{is_no_throw_move_assignable<Tp>::value};
+    auto is_nothrow_move_assignable_v{is_nothrow_move_assignable<Tp>::value};
 
     // Is no throw swappable with
     namespace impl
     {
         template<typename Tp, typename Up>
-        using is_no_throw_swappable_with_helper_t =
+        using is_nothrow_swappable_with_helper_t =
                 decltype(noexcept(std::swap(std::declval<Tp>(), std::declval<Up>())));
 
         template<typename , typename, typename = void>
-        struct is_no_throw_swappable_with_impl : public false_type {};
+        struct is_nothrow_swappable_with_impl : public false_type {};
 
         template<typename Tp, typename Up>
-        struct is_no_throw_swappable_with_impl<Tp, Up, void_t<is_no_throw_swappable_with_helper_t<Tp, Up>,
-                is_no_throw_swappable_with_helper_t<Up,Tp>>> : public true_type {};
+        struct is_nothrow_swappable_with_impl<Tp, Up, void_t<is_nothrow_swappable_with_helper_t<Tp, Up>,
+                is_nothrow_swappable_with_helper_t<Up,Tp>>> : public true_type {};
     }
 
     template<typename Tp, typename Up>
-    struct is_no_throw_swappable_with : public conjunction<
-            impl::is_no_throw_swappable_with_impl<Tp, Up>
-    > {};
+    struct is_nothrow_swappable_with : public conjunction<
+            impl::is_nothrow_swappable_with_impl<Tp, Up>
+    > {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+        static_assert(impl::is_complete_or_unbounded_v<Up>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp, typename Up>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_swappable_with_v{is_no_throw_swappable_with<Tp,Up>::value};
+    auto is_nothrow_swappable_with_v{is_nothrow_swappable_with<Tp,Up>::value};
 
     // Is no throw swappable
     template<typename Tp>
-    struct is_no_throw_swappable : public conjunction<
+    struct is_nothrow_swappable : public conjunction<
             impl::is_referenceable<Tp>,
             negation<is_void<Tp>>,
-            is_no_throw_swappable_with<add_lvalue_reference_t<Tp>,
-                    add_lvalue_reference_t<Tp>>>{};
+            is_nothrow_swappable_with<add_lvalue_reference_t<Tp>,
+                    add_lvalue_reference_t<Tp>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
-    [[maybe_unused]] static constexpr auto is_no_throw_swappable_v{is_no_throw_swappable<Tp>::value};
+    [[maybe_unused]] static constexpr auto is_no_throw_swappable_v{is_nothrow_swappable<Tp>::value};
 
     // Is no throw destructible
     namespace impl
@@ -1183,10 +1284,10 @@ namespace bazaar::traits {
         using is_no_throw_destructible_helper_t = decltype(noexcept(std::declval<Tp&>().~Tp()));
 
         template<typename , typename = void>
-        struct is_no_throw_destructible_impl : public false_type {};
+        struct is_nothrow_destructible_impl : public false_type {};
 
         template<typename Tp>
-        struct is_no_throw_destructible_impl<Tp,
+        struct is_nothrow_destructible_impl<Tp,
                 void_t<is_no_throw_destructible_helper_t<Tp>>> : public true_type {};
     }
 
@@ -1197,7 +1298,10 @@ namespace bazaar::traits {
                     negation<is_void<Tp>>,
                     negation<is_function<Tp>>,
                     negation<is_unbounded_array<Tp>>,
-                    impl::is_no_throw_destructible_impl<remove_all_extents_t<Tp>>>>{};
+                    impl::is_nothrow_destructible_impl<remove_all_extents_t<Tp>>>>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -1221,7 +1325,10 @@ namespace bazaar::traits {
     template<typename Tp>
     struct has_unique_object_representations : public bool_constant<
             __has_unique_object_representations(remove_cv_t<remove_all_extents_t<Tp>>)
-            >{};
+            >{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+            };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
@@ -1300,7 +1407,10 @@ namespace bazaar::traits {
 
     // Alignment of
     template<typename Tp>
-    struct alignment_of : public integral_constant<std::size_t, alignof(Tp)> {};
+    struct alignment_of : public integral_constant<std::size_t, alignof(Tp)> {
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
 
     template<typename Tp>
     [[maybe_unused]] static constexpr auto alignment_of_v{alignment_of<Tp>::value};
@@ -1408,6 +1518,4 @@ namespace bazaar::traits {
 
     template<typename Tp>
     using underlying_type_t [[maybe_unused]] = typename underlying_type<Tp>::type;
-
-
 }
