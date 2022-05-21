@@ -1004,7 +1004,7 @@ namespace bazaar::traits {
         true_type test_is_polymorphic (
                 decltype(dynamic_cast<const volatile void*>(static_cast<Tp*>(nullptr)))
                 );
-        template<typename Tp>
+        template<typename>
         [[maybe_unused]] false_type test_is_polymorphic(...);
     }
 
