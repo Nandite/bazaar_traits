@@ -298,9 +298,13 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_rvalue_reference_v = is_rvalue_reference<Tp>::value;
 
     // Is reference
-    template<typename Tp> struct is_reference : public false_type {};
-    template<typename Tp> struct is_reference<Tp&> : public true_type {};
-    template<typename Tp> struct is_reference<Tp&&> : public true_type {};
+    template<typename Tp>
+    struct is_reference : public disjunction<is_lvalue_reference<Tp>, is_rvalue_reference<Tp>> {};
+
+    // Alternate
+//    template<typename Tp> struct is_reference : public false_type {};
+//    template<typename Tp> struct is_reference<Tp&> : public true_type {};
+//    template<typename Tp> struct is_reference<Tp&&> : public true_type {};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_reference_v = is_reference<Tp>::value;
@@ -321,7 +325,6 @@ namespace bazaar::traits {
 
         template<typename Tp, typename Up>
         struct is_member_pointer_impl<Tp Up::*> : public true_type {};
-
     }
 
     template<typename Tp>
@@ -447,15 +450,9 @@ namespace bazaar::traits {
     // Remove pointer
     namespace impl
     {
-        template<typename Tp>
-        struct remove_pointer_helper : public identity<Tp>{};
-
-        template<typename Tp>
-        struct remove_pointer_helper<Tp*> : public identity<Tp>{};
-
-        template<typename Tp, bool = is_pointer_v<Tp>>
-        struct remove_pointer_impl : public identity<Tp> {};
-
+        template<typename Tp> struct remove_pointer_helper : public identity<Tp>{};
+        template<typename Tp> struct remove_pointer_helper<Tp*> : public identity<Tp>{};
+        template<typename Tp, bool = is_pointer_v<Tp>> struct remove_pointer_impl : public identity<Tp> {};
         template<typename Tp>
         struct remove_pointer_impl<Tp, true> : public identity<typename remove_pointer_helper<Tp>::type> {};
     }
@@ -655,7 +652,6 @@ namespace bazaar::traits {
     namespace impl {
         template<typename Tp> struct is_bounded_array_impl : public false_type {};
         template<typename Tp, std::size_t N> struct is_bounded_array_impl<Tp[N]> : public true_type {};
-
         template<typename Tp> struct is_unbounded_array_impl : public false_type {};
         template<typename Tp> struct is_unbounded_array_impl<Tp[]> : public true_type {};
     }
@@ -1208,6 +1204,5 @@ namespace bazaar::traits {
 
     // TODO
     /* template <class Fn, class... ArgTypes> struct invoke_result; */
-
 
 }
