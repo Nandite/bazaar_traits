@@ -138,10 +138,13 @@ namespace bazaar::traits {
 
         template<typename In, typename Out>
         struct apply_cv_impl<In&, Out, true, true> : public identity<const volatile Out&>{};
-
-        template<typename In, typename Out>
-        struct apply_cv : public impl::apply_cv_impl<In, Out> {};
     }
+
+    template<typename In, typename Out>
+    struct apply_cv : public impl::apply_cv_impl<In, Out> {};
+
+    template<typename In, typename Out>
+    using apply_cv_t [[maybe_unused]] = typename apply_cv<In,Out>::type;
 
     //-------------------------------------------------------------------------------------------
     // Primary classification traits
@@ -549,7 +552,7 @@ namespace bazaar::traits {
     }
 
     template<typename Tp>
-    struct make_signed : identity<typename impl::apply_cv<Tp,
+    struct make_signed : identity<typename apply_cv<Tp,
             impl::make_signed_impl<remove_cv_t<Tp>>>::type> {};
 
     template<typename Tp>
@@ -579,7 +582,7 @@ namespace bazaar::traits {
     }
 
     template<typename Tp>
-    struct make_unsigned : identity<typename impl::apply_cv<Tp,
+    struct make_unsigned : identity<typename apply_cv<Tp,
             impl::make_unsigned_impl<remove_cv_t<Tp>>>::type> {};
 
     template<typename Tp>
