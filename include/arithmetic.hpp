@@ -11,40 +11,47 @@ namespace bazaar::traits
     // Max
     namespace impl {
         template<std::size_t I0, std::size_t ... In>
-        struct meta_max {
+        struct static_max_impl {
         };
 
         template<std::size_t I0>
-        struct meta_max<I0> {
-            static constexpr std::size_t value = I0;
+        struct static_max_impl<I0> {
+            static constexpr auto value = I0;
         };
 
         template<std::size_t I0, std::size_t I1, std::size_t ... In>
-        struct meta_max<I0, I1, In...> {
-            static constexpr std::size_t value = I0 > I1 ? meta_max<I0, In...>::value : meta_max<I1, In...>::value;
+        struct static_max_impl<I0, I1, In...> {
+            static constexpr auto value =
+                    I0 > I1 ? static_max_impl<I0, In...>::value : static_max_impl<I1, In...>::value;
         };
     }
 
-    template<std::size_t I0, std::size_t I1, std::size_t ... In>
-    inline constexpr std::size_t meta_max_v = impl::meta_max<I0, I1, In...>::value;
+    template<std::size_t ... Sequence>
+    struct static_max : public impl::static_max_impl<Sequence...> {};
+
+    template<std::size_t ... Sequence>
+    [[maybe_unused]] inline constexpr auto static_max_v = static_max<Sequence...>::value;
 
     // Min
     namespace impl {
         template<std::size_t I0, std::size_t  ... In>
-        struct meta_min {
+        struct static_min_impl {
         };
 
         template<std::size_t I0>
-        struct meta_min<I0> {
-            static constexpr std::size_t value = I0;
+        struct static_min_impl<I0> {
+            static constexpr auto value = I0;
         };
 
         template<std::size_t I0, std::size_t I1, std::size_t ... In>
-        struct meta_min<I0, I1, In...> {
-            static constexpr std::size_t value = I0 < I1 ? meta_min<I0, In...>::value : meta_min<I1, In...>::value;
+        struct static_min_impl<I0, I1, In...> {
+            static constexpr auto value =
+                    I0 < I1 ? static_min_impl<I0, In...>::value : static_min_impl<I1, In...>::value;
         };
     }
 
+    template<std::size_t ... Sequence>
+    struct static_min : public impl::static_min_impl<Sequence...> {};
     template<std::size_t I0, std::size_t I1, std::size_t ... In>
     inline constexpr std::size_t meta_min_v = impl::meta_min<I0, I1, In...>::value;
 
@@ -89,4 +96,6 @@ namespace bazaar::traits
     }
 
 
+    template<std::size_t ... Sequence>
+    [[maybe_unused]] inline constexpr auto static_min_v = static_min<Sequence...>::value;
 }

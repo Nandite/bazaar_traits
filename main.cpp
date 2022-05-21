@@ -8,8 +8,8 @@ struct Tp {};
 namespace bzt = bazaar::traits;
 
 int main() {
-    constexpr auto max{bzt::meta_max_v<45,100,12,589,2214,55,88,9929,56>};
-    constexpr auto min{bzt::meta_min_v<45,100,12,589,2214,55,88,9929,56>};
+    constexpr auto max{bzt::static_max_v<45,100,12,589,2214,55,88,9929,56>};
+    constexpr auto min{bzt::static_min_v<45,100,12,589,2214,55,88,9929,56>};
     std::cout << "Maximum value is " << max << std::endl;
     std::cout << "Minimum value is " << min << std::endl;
 
