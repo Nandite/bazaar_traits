@@ -909,6 +909,124 @@ namespace bazaar::traits {
     [[maybe_unused]] static constexpr
     auto is_trivially_destructible_v{is_trivially_destructible<Tp>::value};
 
+    // Is trivially copyable
+#if (__has_feature(is_trivially_copyable) || defined(_LIBCPP_COMPILER_GCC))
+    template <typename Tp>
+    struct is_trivially_copyable : public bool_constant<__is_trivially_copyable(Tp)> {};
+#else
+    template<typename Tp>
+    struct is_trivially_copyable
+    {
+    private:
+        using Up = remove_all_extents_t<remove_const_t<Tp>>;
+        using has_trivial_copy_constructor = is_trivially_copy_constructible<Up>;
+        using has_deleted_copy_constructor = negation<is_copy_constructible<Up>>;
+        using has_trivial_move_constructor = is_trivially_move_constructible<Up>;
+        using has_deleted_move_constructor = negation<is_move_constructible<Up>>;
+        using has_trivial_copy_assign = is_trivially_copy_assignable<Up>;
+        using has_deleted_copy_assign = negation<is_copy_assignable<Up>>;
+        using has_trivial_move_assign = is_trivially_move_assignable<Up>;
+        using has_deleted_move_assign = negation<is_move_assignable<Up>>;
+        using has_trivial_destructor = is_trivially_destructible<Up>;
+    public:
+        static constexpr auto value {conjunction_v<
+            has_trivial_destructor,
+            disjunction<has_trivial_copy_constructor, has_deleted_copy_constructor>,
+                    disjunction<has_trivial_move_constructor, has_deleted_move_constructor>,
+                            disjunction<has_trivial_copy_assign, has_deleted_copy_assign>,
+                                    disjunction<has_trivial_move_assign, has_deleted_move_assign>>};
+    };
+#endif
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_trivially_copyable_v{is_trivially_copyable<Tp>::value};
+
+    // Is trivial
+#if (__has_feature(is_trivial) || defined(_LIBCPP_COMPILER_GCC))
+    template<typename Tp>
+    struct is_trivial : public bool_constant<__is_trivial(Tp)> {};
+#else
+    template <typename Tp>
+    struct is_trivial : public disjunction<is_scalar<Tp>,
+            conjunction<is_trivially_copyable<Tp>, is_trivially_default_constructible<Tp>>>{};
+#endif
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_trivial_v{is_trivial<Tp>::value};
+
+    // Is standard layout
+#if (__has_feature(is_standard_layout) || defined(_LIBCPP_COMPILER_GCC))
+    template<typename Tp>
+    struct is_standard_layout : public bool_constant<__is_standard_layout(Tp)> {};
+#else
+    template<typename Tp>
+    struct is_standard_layout : public is_scalar<remove_all_extents_t<Tp>>{};
+#endif
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_standard_layout_v{is_standard_layout<Tp>::value};
+
+    // Is empty
+#if (__has_feature(is_empty) || defined(_LIBCPP_COMPILER_GCC))
+    template<typename Tp>
+    struct is_empty : public bool_constant<__is_empty(Tp)> {};
+#else
+
+    namespace impl
+    {
+        template<typename Tp>
+        struct empty_derived_class : public Tp {[[maybe_unused]] std::size_t a;};
+        struct empty_base_class {[[maybe_unused]] std::size_t a;};
+
+        template<typename Tp, bool = is_class_v<Tp>>
+        struct is_empty_impl : public bool_constant<(sizeof(empty_derived_class<Tp>) == sizeof(empty_base_class) )> {};
+
+        template<typename Tp>
+        struct is_empty_impl<Tp, false> : false_type {};
+    }
+
+    template<typename Tp>
+    struct is_empty : public conjunction<negation<is_union<Tp>>, impl::is_empty_impl<Tp> >{};
+#endif
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_empty_v{is_empty<Tp>::value};
+
+    // Is polymorphic
+
+#if (__has_feature(is_polymorphic) || defined(_LIBCPP_COMPILER_GCC))
+    template<typename Tp>
+    struct is_polymorphic : public bool_constant<__is_polymorphic(Tp)>{};
+#else
+    namespace impl
+    {
+        template<typename Tp>
+        true_type test_is_polymorphic (
+                decltype(dynamic_cast<const volatile void*>(static_cast<Tp*>(nullptr)))
+                );
+        template<typename Tp>
+        [[maybe_unused]] false_type test_is_polymorphic(...);
+    }
+
+    template<typename Tp>
+    struct is_polymorphic : conjunction<negation<is_union<Tp>>, decltype(impl::test_is_polymorphic<Tp>(nullptr))>{};
+#endif
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_polymorphic_v{is_polymorphic<Tp>::value};
+
+    // Is abstract
+    template<typename Tp> struct is_abstract : public bool_constant<__is_abstract(Tp)> {};
+    template<typename Tp> [[maybe_unused]] inline constexpr auto is_abstract_v{is_abstract<Tp>::value};
+
+    // Is final
+    template<typename Tp> struct is_final : public bool_constant<__is_final(Tp)> {};
+    template<typename Tp> [[maybe_unused]] inline constexpr auto is_final_v{is_final<Tp>::value};
+
+    // is aggregate
+    template<typename Tp> struct is_aggregate : public bool_constant<__is_aggregate(Tp)> {};
+    template<typename Tp> [[maybe_unused]] inline constexpr auto is_aggregate_v{is_aggregate<Tp>::value};
+
     // Is no throw constructible
     template<typename Tp, typename ... Args>
     struct is_now_throw_constructible : public bool_constant<__is_nothrow_constructible(Tp, Args...)>{};
@@ -1186,6 +1304,73 @@ namespace bazaar::traits {
 
     template<typename Tp>
     using decay_t [[maybe_unused]] = typename decay<Tp>::type;
+
+    // Remove cvref
+
+    namespace impl
+    {
+        template<typename Tp, bool = is_reference_v<Tp> >
+        struct remove_cvref_impl : public identity<remove_cv_t<remove_reference_t<Tp>>>{};
+
+        template<typename Tp>
+        struct remove_cvref_impl<Tp, false> : identity<remove_cv_t<Tp>> {};
+    }
+
+    template<typename Tp>
+    struct remove_cvref : public impl::remove_cvref_impl<Tp> {};
+
+    template<typename Tp>
+    using remove_cvref_t [[maybe_unused]] = typename remove_cvref<Tp>::type;
+
+    // Common type
+    template<typename ...>
+    struct common_type {};
+
+    template<typename Tp>
+    struct common_type<Tp> : public common_type<Tp, Tp> {};
+
+    namespace impl
+    {
+        template<typename T1, typename T2>
+        using common_type_helper = decltype(false ? std::declval<T1>() : std::declval<T2>());
+
+        template<typename, typename, typename = void>
+        struct decay_common_type {};
+
+        template<typename T1, typename T2>
+        struct decay_common_type<T1, T2, void_t<common_type_helper<T1, T2>>> : public
+                decay<common_type_helper<T1, T2>>{};
+
+        template<typename T1, typename T2, typename = void>
+        struct common_type_impl : public decay_common_type<const remove_reference_t<T1>&,
+                const remove_reference_t<T2> &>{};
+
+        template<typename T1, typename T2>
+        struct common_type_impl<T1, T2, void_t<common_type_helper<T1,T2>>> : public
+                decay_common_type<T1, T2> {};
+    }
+
+    template<typename T1, typename T2>
+    struct common_type<T1, T2> : conditional_t<
+                    disjunction_v<is_not_same<T1, decay_t<T1>>, is_not_same<T2, decay_t<T2>>>,
+                    common_type<decay_t<T1>,decay_t<T2>>,
+                    impl::common_type_impl<T1,T2>> {};
+
+    namespace impl
+    {
+        template<typename VoidType, typename, typename, typename ...>
+        struct common_type_sequence_impl {};
+
+        template<typename T1, typename T2, typename ... Sequence>
+        struct common_type_sequence_impl<void_t<typename common_type<T1, T2>::type>, T1, T2, Sequence...> :
+                common_type<typename common_type<T1, T2>::type, Sequence...> {};
+    }
+
+    template<typename T1, typename T2, typename ... Sequence>
+    struct common_type<T1, T2, Sequence...> : public impl::common_type_sequence_impl<void, T1, T2, Sequence...> {};
+
+    template<typename ... Sequence>
+    using common_type_t [[maybe_unused]] = typename common_type<Sequence...>::type;
 
     // Underlying type
     namespace impl
