@@ -479,6 +479,36 @@ namespace bazaar::traits {
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_enum_v{is_enum<Tp>::value};
 
+    namespace impl
+    {
+        template <typename Tp, typename = decltype(sizeof(std::declval<Tp>()))>
+        [[maybe_unused]] static true_type test_is_complete(Tp*);
+        template <typename> static false_type test_is_complete(...);
+
+        template<typename Tp>
+        struct is_complete_impl : public identity<decltype(test_is_complete<Tp>(nullptr))> {};
+    }
+
+    template<typename Tp>
+    struct is_complete : disjunction<
+            is_function<remove_reference_t<Tp>>,
+            impl::is_complete_impl<Tp>> {};
+
+    template<typename Tp>
+    struct is_complete<Tp&> : is_complete<remove_reference_t<Tp>> {};
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_complete_v{is_complete<Tp>::value};
+
+    namespace impl
+    {
+        template<typename Tp>
+        struct is_complete_or_unbounded : public disjunction<is_complete<Tp>, is_unbounded_array<Tp>> {};
+
+        template<typename Tp>
+        [[maybe_unused]] inline constexpr auto is_complete_or_unbounded_v{is_complete_or_unbounded<Tp>::value};
+    }
+
     //-------------------------------------------------------------------------------------------
     // Secondary classification traits
     //-------------------------------------------------------------------------------------------
