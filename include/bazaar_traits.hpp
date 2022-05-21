@@ -245,12 +245,14 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr bool is_floating_v = is_floating_point<Tp>::value;
 
     template<typename Tp>
-    struct is_signed_integer : public impl::is_signed_integer_impl<remove_cv_t<Tp>>{};
+    struct is_signed_integer : public conjunction<is_integral<remove_cv_t<Tp>>,
+            impl::is_signed_integer_impl<remove_cv_t<Tp>>>{};
     template<typename Tp>
     [[maybe_unused]] inline constexpr bool is_signed_integer_v = is_signed_integer<Tp>::value;
 
     template<typename Tp>
-    struct is_unsigned_integer : public impl::is_unsigned_integer_impl<remove_cv_t<Tp>>{};
+    struct is_unsigned_integer : public conjunction<is_integral<remove_cv_t<Tp>>,
+            impl::is_unsigned_integer_impl<remove_cv_t<Tp>>>{};
     template<typename Tp>
     [[maybe_unused]] inline constexpr bool is_unsigned_integer_v = is_unsigned_integer<Tp>::value;
 
