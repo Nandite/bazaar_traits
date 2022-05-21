@@ -10,6 +10,87 @@
 namespace bazaar::traits {
 
     //-------------------------------------------------------------------------------------------
+    // Array properties and transformations
+    //-------------------------------------------------------------------------------------------
+
+    // Rank
+    namespace impl
+    {
+        template<typename Tp> struct rank_impl : integral_constant<std::size_t ,0>{};
+        template<typename Tp> struct rank_impl<Tp[]> : integral_constant< std::size_t,
+                1 + rank_impl<Tp>::value>{};
+        template<typename Tp, std::size_t N> struct rank_impl<Tp[N]> : integral_constant<std::size_t,
+                1 + rank_impl<Tp>::value>{};
+    }
+
+    template<typename Tp> struct rank : public impl::rank_impl<Tp>{};
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto rank_v{rank<Tp>::value};
+
+    // Extent
+    namespace impl {
+        template<typename Tp, std::size_t N = 0>
+        struct extent_impl : public integral_constant<std::size_t, 0>{};
+
+        template<typename Tp>
+        struct extent_impl<Tp[], 0> : public integral_constant<std::size_t, 0>{};
+
+        template<typename Tp, std::size_t Dim>
+        struct extent_impl<Tp[], Dim> : public extent_impl<Tp, Dim-1>{};
+
+        template<typename Tp, std::size_t Dim>
+        struct extent_impl<Tp[Dim], 0> : public integral_constant<std::size_t, Dim>{};
+
+        template<typename Tp, std::size_t Dim, std::size_t N>
+        struct extent_impl<Tp[Dim], N> : public extent_impl<Tp, N - 1>{};
+    }
+
+    template<typename Tp, std::size_t N = 0>
+    struct extent : public impl::extent_impl<Tp, N>{};
+
+    template<typename Tp, std::size_t N = 0>
+    [[maybe_unused]] inline constexpr auto extent_v{extent<Tp, N>::value};
+
+    // Remove extent
+    template<typename Tp> struct remove_extent : public identity<Tp>{};
+    template<typename Tp> struct remove_extent<Tp[]> : public identity<Tp>{};
+    template<typename Tp, std::size_t N>
+    struct remove_extent<Tp[N]> : public identity<Tp>{};
+
+    template<typename Tp>
+    using remove_extent_t [[maybe_unused]] = typename remove_extent<Tp>::type;
+
+    // Remove all extents
+    template<typename Tp> struct remove_all_extents : public identity<Tp>{};
+    template<typename Tp>
+    struct remove_all_extents<Tp[]> : public identity<typename remove_all_extents<Tp>::type>{};
+    template<typename Tp, std::size_t N>
+    struct remove_all_extents<Tp[N]> : public identity<typename remove_all_extents<Tp>::type> {};
+
+    template<typename Tp>
+    using remove_all_extents_t [[maybe_unused]] = typename remove_all_extents<Tp>::type;
+
+    namespace impl {
+        template<typename Tp> struct is_bounded_array_impl : public false_type {};
+        template<typename Tp, std::size_t N> struct is_bounded_array_impl<Tp[N]> : public true_type {};
+        template<typename Tp> struct is_unbounded_array_impl : public false_type {};
+        template<typename Tp> struct is_unbounded_array_impl<Tp[]> : public true_type {};
+    }
+
+    template<typename Tp>
+    struct is_bounded_array : public impl::is_bounded_array_impl<Tp>{};
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_bounded_array_v{is_bounded_array<Tp>::value};
+
+    template<typename Tp>
+    struct is_unbounded_array : public impl::is_unbounded_array_impl<Tp>{};
+
+    template<typename Tp>
+    [[maybe_unused]] inline constexpr auto is_unbounded_array_v{is_unbounded_array<Tp>::value};
+
+    //-------------------------------------------------------------------------------------------
     // Reference transformations
     //-------------------------------------------------------------------------------------------
 
@@ -586,87 +667,6 @@ namespace bazaar::traits {
 
     template<typename Tp>
     using make_unsigned_t [[maybe_unused]] = typename make_unsigned<Tp>::type;
-
-    //-------------------------------------------------------------------------------------------
-    // Array properties and transformations
-    //-------------------------------------------------------------------------------------------
-
-    // Rank
-    namespace impl
-    {
-        template<typename Tp> struct rank_impl : integral_constant<std::size_t ,0>{};
-        template<typename Tp> struct rank_impl<Tp[]> : integral_constant< std::size_t,
-                1 + rank_impl<Tp>::value>{};
-        template<typename Tp, std::size_t N> struct rank_impl<Tp[N]> : integral_constant<std::size_t,
-                1 + rank_impl<Tp>::value>{};
-    }
-
-    template<typename Tp> struct rank : public impl::rank_impl<Tp>{};
-
-    template<typename Tp>
-    [[maybe_unused]] inline constexpr auto rank_v{rank<Tp>::value};
-
-    // Extent
-    namespace impl {
-        template<typename Tp, std::size_t N = 0>
-        struct extent_impl : public integral_constant<std::size_t, 0>{};
-
-        template<typename Tp>
-        struct extent_impl<Tp[], 0> : public integral_constant<std::size_t, 0>{};
-
-        template<typename Tp, std::size_t Dim>
-        struct extent_impl<Tp[], Dim> : public extent_impl<Tp, Dim-1>{};
-
-        template<typename Tp, std::size_t Dim>
-        struct extent_impl<Tp[Dim], 0> : public integral_constant<std::size_t, Dim>{};
-
-        template<typename Tp, std::size_t Dim, std::size_t N>
-        struct extent_impl<Tp[Dim], N> : public extent_impl<Tp, N - 1>{};
-    }
-
-    template<typename Tp, std::size_t N = 0>
-    struct extent : public impl::extent_impl<Tp, N>{};
-
-    template<typename Tp, std::size_t N = 0>
-    [[maybe_unused]] inline constexpr auto extent_v{extent<Tp, N>::value};
-
-    // Remove extent
-    template<typename Tp> struct remove_extent : public identity<Tp>{};
-    template<typename Tp> struct remove_extent<Tp[]> : public identity<Tp>{};
-    template<typename Tp, std::size_t N>
-    struct remove_extent<Tp[N]> : public identity<Tp>{};
-
-    template<typename Tp>
-    using remove_extent_t [[maybe_unused]] = typename remove_extent<Tp>::type;
-
-    // Remove all extents
-    template<typename Tp> struct remove_all_extents : public identity<Tp>{};
-    template<typename Tp>
-    struct remove_all_extents<Tp[]> : public identity<typename remove_all_extents<Tp>::type>{};
-    template<typename Tp, std::size_t N>
-    struct remove_all_extents<Tp[N]> : public identity<typename remove_all_extents<Tp>::type> {};
-
-    template<typename Tp>
-    using remove_all_extents_t [[maybe_unused]] = typename remove_all_extents<Tp>::type;
-
-    namespace impl {
-        template<typename Tp> struct is_bounded_array_impl : public false_type {};
-        template<typename Tp, std::size_t N> struct is_bounded_array_impl<Tp[N]> : public true_type {};
-        template<typename Tp> struct is_unbounded_array_impl : public false_type {};
-        template<typename Tp> struct is_unbounded_array_impl<Tp[]> : public true_type {};
-    }
-
-    template<typename Tp>
-    struct is_bounded_array : public impl::is_bounded_array_impl<Tp>{};
-
-    template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_bounded_array_v{is_bounded_array<Tp>::value};
-
-    template<typename Tp>
-    struct is_unbounded_array : public impl::is_unbounded_array_impl<Tp>{};
-
-    template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_unbounded_array_v{is_unbounded_array<Tp>::value};
 
     //-------------------------------------------------------------------------------------------
     // Member introspection
