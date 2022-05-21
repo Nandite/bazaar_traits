@@ -29,7 +29,7 @@ namespace bazaar::traits {
         template<typename> is_non_referenceable_type test_is_referenceable(...);
         template<typename Tp>
         struct is_referenceable
-                : public condition_as_type<is_not_same_v<is_non_referenceable_type,
+                : public bool_condition<is_not_same_v<is_non_referenceable_type,
                         decltype(test_is_referenceable<Tp>(0))>>::type {
         };
     }
@@ -452,7 +452,7 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename Tp, bool = is_integral_v<Tp>>
-        struct is_signed_impl  : public condition_as_type<Tp(-1) < Tp(0)>{};
+        struct is_signed_impl  : public bool_condition<Tp(-1) < Tp(0)>{};
 
         template<typename Tp> // floating point is signed by default
         struct is_signed_impl<Tp, false> : public true_type {};
@@ -471,7 +471,7 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename Tp, bool = is_integral_v<Tp>>
-        struct is_unsigned_impl  : public condition_as_type<Tp(0) < Tp(-1)>{};
+        struct is_unsigned_impl  : public bool_condition<Tp(0) < Tp(-1)>{};
 
         template<typename Tp> // floating point is signed by default
         struct is_unsigned_impl<Tp, false> : public false_type {};

@@ -49,7 +49,7 @@ namespace bazaar::traits
     using conditional_t [[maybe_unused]] = typename conditional<Condition, If, Else>::type;
 
     template<bool Condition>
-    struct condition_as_type : public impl::conditional_impl<Condition, true_type , false_type>{};
+    struct bool_condition : public impl::conditional_impl<Condition, true_type , false_type>{};
 
     // Is same
     namespace impl {
