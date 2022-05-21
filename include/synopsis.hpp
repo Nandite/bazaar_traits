@@ -7,85 +7,102 @@
 /*
 namespace bazaar
 {
+    //-------------------------------------------------------------------------------------------
+    // helper_traits.hpp
+    //-------------------------------------------------------------------------------------------
+    using nullptr_t;
+    template<typename Tp> struct identity;
+    template <bool, typename Tp = void> struct enable_if;
+    template<bool Condition, typename If, typename Else> struct conditional
+    template<typename Tp, typename Up> struct is_same;
+    template<typename Tp, typename ... Sequence> struct is_one_of;
 
-    // helper class:
-    template <class T, T v> struct integral_constant;
-    typedef integral_constant<bool, true>  true_type;   // C++11
-    typedef integral_constant<bool, false> false_type;  // C++11
+    //-------------------------------------------------------------------------------------------
+    // integral_constant.hpp
+    //-------------------------------------------------------------------------------------------
+    template<typename Tp, Tp v> struct integral_constant;
+    template<bool v> using bool_constant;
+    using true_type = bool_constant<true>;
+    using false_type = bool_constant<false>;
+    template<typename Tp> struct invert_bool_constant;
 
-    template <bool B>                                   // C++14
-    using bool_constant = integral_constant<bool, B>;   // C++14
-    typedef bool_constant<true> true_type;              // C++14
-    typedef bool_constant<false> false_type;            // C++14
+    //-------------------------------------------------------------------------------------------
+    // arithmetic.hpp
+    //-------------------------------------------------------------------------------------------
+    template<std::size_t ... Sequence> struct static_max;
+    template<std::size_t ... Sequence> struct static_min;
 
-    // helper traits
-    template <bool, class T = void> struct enable_if;
-    template <bool, class T, class F> struct conditional;
+    //-------------------------------------------------------------------------------------------
+    // logical_operators.hpp
+    //-------------------------------------------------------------------------------------------
+    template<typename ... Bn> struct conjunction;
+    template<typename ... Bn> struct disjunction;
+    template<typename B> struct negation;
+
+    //-------------------------------------------------------------------------------------------
+    // bazaar_traits.hpp
+    //-------------------------------------------------------------------------------------------
 
     // Reference transformations:
-    template <class T> struct remove_reference;
-    template <class T> struct add_lvalue_reference;
-    template <class T> struct add_rvalue_reference;
+    template<typename Tp> struct remove_reference;
+    template<typename Tp> struct add_lvalue_reference;
+    template<typename Tp> struct add_rvalue_reference;
 
     // Const-volatile properties and transformations:
-    template <class T> struct is_const;
-    template <class T> struct is_volatile;
-    template <class T> struct remove_const;
-    template <class T> struct remove_volatile;
-    template <class T> struct remove_cv;
-    template <class T> struct add_const;
-    template <class T> struct add_volatile;
-    template <class T> struct add_cv;
-    template <class T, class U> apply_cv;
+    template<typename Tp> struct is_const;
+    template<typename Tp> struct is_volatile;
+    template <typename Tp> struct remove_const;
+    template <typename Tp> struct remove_volatile;
+    template<typename Tp> struct remove_cv;
+    template<typename Tp> struct add_const;
+    template<typename Tp> struct add_volatile;
+    template<typename Tp> struct add_cv;
+    template<typename In, typename Out> struct apply_cv;
 
     // Primary classification traits:
-    template <class T> struct is_void;
-    template <class T> struct is_null_pointer;  // C++14
-    template <class T> struct is_integral;
-    template <class T> struct is_floating_point;
-    template <class T> struct is_arithmetic;
-    template <class T> struct is_array;
-    template <class T> struct is_pointer;
-    template <class T> struct is_lvalue_reference;
-    template <class T> struct is_rvalue_reference;
-    template <class T> struct is_reference;
-    template <class T> struct is_member_pointer;
-    template <class T> struct is_member_object_pointer;
-    template <class T> struct is_member_function_pointer;
-    template <class T> struct is_enum;
-    template <class T> struct is_union;
-    template <class T> struct is_class;
-    template <class T> struct is_function;
+    template<typename Tp> struct is_void;
+    template<typename Tp> struct is_null_pointer;
+    template<typename Tp> struct is_integral;
+    template<typename Tp> struct is_floating_point;
+    template<typename Tp> struct is_signed_integer;
+    template<typename Tp> struct is_unsigned_integer;
+    template<typename T> struct is_arithmetic;
+    template<typename Tp> struct is_array;
+    template<typename Tp> struct is_pointer;
+    template<typename Tp> struct is_lvalue_reference;
+    template<typename Tp> struct is_rvalue_reference;
+    template<typename Tp> struct is_reference;
+    template<typename Tp> struct is_function;
+    template<typename Tp> struct is_member_pointer;
+    template<typename Tp> struct is_member_object_pointer;
+    template<typename Tp> struct is_member_function_pointer;
+    template<typename Tp> struct is_union;
+    template<typename Tp> struct is_class;
+    template<typename Tp> struct is_enum;
 
     // Secondary classification traits:
-    template <class T> struct is_fundamental;
-    template <class T> struct is_scoped_enum; // C++2b
-    template <class T> struct is_scalar;
-    template <class T> struct is_object;
-    template <class T> struct is_compound;
+    template<typename Tp> struct is_fundamental;
+    template<typename Tp> struct is_scalar;
+    template<typename Tp> struct is_object;
+    template<typename Tp> struct is_compound;
 
     // Pointer transformations:
-    template <class T> struct remove_pointer;
-    template <class T> struct add_pointer;
-
-    template<class T> struct type_identity;                     // C++20
-    template<class T>
-    using type_identity_t = typename type_identity<T>::type;  // C++20
+    template<typename Tp> struct remove_pointer;
+    template<typename Tp> struct add_pointer;
 
     // Integral properties:
-    template <class T> struct is_signed;
-    template <class T> struct is_unsigned;
-    template <class T> struct make_signed;
-    template <class T> struct make_unsigned;
+    template<typename Tp> struct is_signed;
+    template<typename Tp> struct is_unsigned;
+    template<typename Tp> struct make_signed;
+    template<typename Tp> struct make_unsigned;
 
     // Array properties and transformations:
-    template <class T> struct rank;
-    template <class T, unsigned I = 0> struct extent;
-    template <class T> struct remove_extent;
-    template <class T> struct remove_all_extents;
-
-    template <class T> struct is_bounded_array;                 // C++20
-    template <class T> struct is_unbounded_array;               // C++20
+    template<typename Tp> struct rank;
+    template<typename Tp, std::size_t N = 0> struct extent;
+    template<typename Tp> struct remove_extent;
+    template<typename Tp> struct remove_all_extents;
+    template<typename Tp> struct is_bounded_array;
+    template<typename Tp> struct is_unbounded_array;
 
     // Member introspection:
     template <class T> struct is_pod;

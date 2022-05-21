@@ -9,16 +9,19 @@
 
 namespace bazaar::traits
 {
+    //-------------------------------------------------------------------------------------------
+    // Helper traits
+    //-------------------------------------------------------------------------------------------
+
+    // nullptr_t
     using nullptr_t = decltype(nullptr);
+
+    // void_t
     template<typename ...> using void_t = void;
 
     // Identity
     template<typename Tp>
     struct identity {using type = Tp;};
-
-    //-------------------------------------------------------------------------------------------
-    // Helper traits
-    //-------------------------------------------------------------------------------------------
 
     // Enable_if
     template<bool, typename Tp = void>
