@@ -191,6 +191,46 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr bool is_null_pointer_v = is_null_pointer<Tp>::value;
 
     // Is integral and floating
+    // Integral and floating points
+    namespace impl
+    {
+        template<typename Tp> struct is_integral_impl : public false_type {};
+        template<> struct is_integral_impl<bool> : public true_type {};
+        template<> struct is_integral_impl<char> : public true_type {};
+        template<> struct is_integral_impl<signed char> : public true_type {};
+        template<> struct is_integral_impl<unsigned char> : public true_type {};
+        template<> struct is_integral_impl<wchar_t> : public true_type {};
+        template<> struct is_integral_impl<char16_t> : public true_type {};
+        template<> struct is_integral_impl<char32_t> : public true_type {};
+        template<> struct is_integral_impl<short> : public true_type {};
+        template<> struct is_integral_impl<unsigned short> : public true_type {};
+        template<> struct is_integral_impl<int> : public true_type {};
+        template<> struct is_integral_impl<unsigned int> : public true_type {};
+        template<> struct is_integral_impl<long> : public true_type {};
+        template<> struct is_integral_impl<unsigned long> : public true_type {};
+        template<> struct is_integral_impl<long long> : public true_type {};
+        template<> struct is_integral_impl<unsigned long long> : public true_type {};
+
+        template<typename Tp> struct is_floating_point_impl : public false_type {};
+        template<> struct is_floating_point_impl<float> : public true_type {};
+        template<> struct is_floating_point_impl<double> : public true_type {};
+        template<> struct is_floating_point_impl<long double> : public true_type {};
+
+        template<typename Tp> struct is_signed_integer_impl : public false_type{};
+        template<> struct is_signed_integer_impl<signed char> : public true_type{};
+        template<> struct is_signed_integer_impl<signed short> : public true_type{};
+        template<> struct is_signed_integer_impl<signed int> : public true_type{};
+        template<> struct is_signed_integer_impl<signed long> : public true_type{};
+        template<> struct is_signed_integer_impl<signed long long> : public true_type{};
+
+        template<typename Tp> struct is_unsigned_integer_impl : public false_type{};
+        template<> struct is_unsigned_integer_impl<unsigned char> : public true_type{};
+        template<> struct is_unsigned_integer_impl<unsigned short> : public true_type{};
+        template<> struct is_unsigned_integer_impl<unsigned int> : public true_type{};
+        template<> struct is_unsigned_integer_impl<unsigned long> : public true_type{};
+        template<> struct is_unsigned_integer_impl<unsigned long long> : public true_type{};
+    }
+
     template<typename Tp>
     struct is_integral : public impl::is_integral_impl<remove_cv_t<Tp>> {};
     template<typename Tp>

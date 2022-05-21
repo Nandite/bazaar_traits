@@ -52,49 +52,6 @@ namespace bazaar::traits
 
     template<std::size_t ... Sequence>
     struct static_min : public impl::static_min_impl<Sequence...> {};
-    template<std::size_t I0, std::size_t I1, std::size_t ... In>
-    inline constexpr std::size_t meta_min_v = impl::meta_min<I0, I1, In...>::value;
-
-    // Integral and floating points
-    namespace impl
-    {
-        template<typename Tp> struct is_integral_impl : public false_type {};
-        template<> struct is_integral_impl<bool> : public true_type {};
-        template<> struct is_integral_impl<char> : public true_type {};
-        template<> struct is_integral_impl<signed char> : public true_type {};
-        template<> struct is_integral_impl<unsigned char> : public true_type {};
-        template<> struct is_integral_impl<wchar_t> : public true_type {};
-        template<> struct is_integral_impl<char16_t> : public true_type {};
-        template<> struct is_integral_impl<char32_t> : public true_type {};
-        template<> struct is_integral_impl<short> : public true_type {};
-        template<> struct is_integral_impl<unsigned short> : public true_type {};
-        template<> struct is_integral_impl<int> : public true_type {};
-        template<> struct is_integral_impl<unsigned int> : public true_type {};
-        template<> struct is_integral_impl<long> : public true_type {};
-        template<> struct is_integral_impl<unsigned long> : public true_type {};
-        template<> struct is_integral_impl<long long> : public true_type {};
-        template<> struct is_integral_impl<unsigned long long> : public true_type {};
-
-        template<typename Tp> struct is_floating_point_impl : public false_type {};
-        template<> struct is_floating_point_impl<float> : public true_type {};
-        template<> struct is_floating_point_impl<double> : public true_type {};
-        template<> struct is_floating_point_impl<long double> : public true_type {};
-
-        template<typename Tp> struct is_signed_integer_impl : public false_type{};
-        template<> struct is_signed_integer_impl<signed char> : public true_type{};
-        template<> struct is_signed_integer_impl<signed short> : public true_type{};
-        template<> struct is_signed_integer_impl<signed int> : public true_type{};
-        template<> struct is_signed_integer_impl<signed long> : public true_type{};
-        template<> struct is_signed_integer_impl<signed long long> : public true_type{};
-
-        template<typename Tp> struct is_unsigned_integer_impl : public false_type{};
-        template<> struct is_unsigned_integer_impl<unsigned char> : public true_type{};
-        template<> struct is_unsigned_integer_impl<unsigned short> : public true_type{};
-        template<> struct is_unsigned_integer_impl<unsigned int> : public true_type{};
-        template<> struct is_unsigned_integer_impl<unsigned long> : public true_type{};
-        template<> struct is_unsigned_integer_impl<unsigned long long> : public true_type{};
-    }
-
 
     template<std::size_t ... Sequence>
     [[maybe_unused]] inline constexpr auto static_min_v = static_min<Sequence...>::value;
