@@ -1268,14 +1268,6 @@ namespace bazaar::traits {
     template<typename From, typename To>
     [[maybe_unused]] static constexpr auto is_no_throw_convertible_v{is_no_throw_convertible<From, To>::value};
 
-    // TODO
-    /*
-        template <class Fn, class... ArgTypes> struct is_invocable;
-        template <class R, class Fn, class... ArgTypes> struct is_invocable_r;
-        template <class Fn, class... ArgTypes> struct is_nothrow_invocable;
-        template <class R, class Fn, class... ArgTypes> struct is_nothrow_invocable_r;
-     */
-
     // Alignment of
     template<typename Tp>
     struct alignment_of : public integral_constant<std::size_t, alignof(Tp)> {};
@@ -1387,7 +1379,5 @@ namespace bazaar::traits {
     template<typename Tp>
     using underlying_type_t [[maybe_unused]] = typename underlying_type<Tp>::type;
 
-    // TODO
-    /* template <class Fn, class... ArgTypes> struct invoke_result; */
 
 }
