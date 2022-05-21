@@ -43,6 +43,14 @@ namespace bazaar
     // bazaar_traits.hpp
     //-------------------------------------------------------------------------------------------
 
+    // Array properties and transformations:
+    template<typename Tp> struct rank;
+    template<typename Tp, std::size_t N = 0> struct extent;
+    template<typename Tp> struct remove_extent;
+    template<typename Tp> struct remove_all_extents;
+    template<typename Tp> struct is_bounded_array;
+    template<typename Tp> struct is_unbounded_array;
+
     // Reference transformations:
     template<typename Tp> struct remove_reference;
     template<typename Tp> struct add_lvalue_reference;
@@ -66,7 +74,7 @@ namespace bazaar
     template<typename Tp> struct is_floating_point;
     template<typename Tp> struct is_signed_integer;
     template<typename Tp> struct is_unsigned_integer;
-    template<typename T> struct is_arithmetic;
+    template<typename Tp> struct is_arithmetic;
     template<typename Tp> struct is_array;
     template<typename Tp> struct is_pointer;
     template<typename Tp> struct is_lvalue_reference;
@@ -96,64 +104,54 @@ namespace bazaar
     template<typename Tp> struct make_signed;
     template<typename Tp> struct make_unsigned;
 
-    // Array properties and transformations:
-    template<typename Tp> struct rank;
-    template<typename Tp, std::size_t N = 0> struct extent;
-    template<typename Tp> struct remove_extent;
-    template<typename Tp> struct remove_all_extents;
-    template<typename Tp> struct is_bounded_array;
-    template<typename Tp> struct is_unbounded_array;
-
     // Member introspection:
-    template <class T, class... Args> struct is_constructible;
-    template <class T>                struct is_default_constructible;
-    template <class T>                struct is_copy_constructible;
-    template <class T>                struct is_move_constructible;
-    template <class T, class U>       struct is_assignable;
-    template <class T>                struct is_copy_assignable;
-    template <class T>                struct is_move_assignable;
-    template <class T, class U>       struct is_swappable_with;       // C++17
-    template <class T>                struct is_swappable;            // C++17
-    template <class T>                struct is_destructible;
+    template<typename Tp, typename ... Args>    struct is_constructible;
+    template<typename Tp> struct                is_default_constructible;
+    template<typename Tp> struct                is_copy_constructible;
+    template<typename Tp> struct                is_move_constructible;
+    template<typename Tp, typename Up>          struct is_assignable;
+    template<typename Tp>                       struct is_copy_assignable;
+    template<typename Tp>                       struct is_move_assignable;
+    template<typename Tp, typename Up>          struct is_swappable_with;
+    template<typename Tp>                       struct is_swappable;
+    template<typename Tp>                       struct is_destructible;
 
-    template <class T, class... Args> struct is_trivially_constructible;
-    template <class T>                struct is_trivially_default_constructible;
-    template <class T>                struct is_trivially_copy_constructible;
-    template <class T>                struct is_trivially_move_constructible;
-    template <class T, class U>       struct is_trivially_assignable;
-    template <class T>                struct is_trivially_copy_assignable;
-    template <class T>                struct is_trivially_move_assignable;
-    template <class T>                struct is_trivially_destructible;
+    template<typename Tp, typename ... Args>    struct is_trivially_constructible;
+    template<typename Tp>                       struct is_trivially_default_constructible;
+    template<typename Tp>                       struct is_trivially_copy_constructible;
+    template<typename Tp>                       struct is_trivially_move_constructible;
+    template<typename Tp, typename Up>          struct is_trivially_assignable;
+    template<typename Tp>                       struct is_trivially_copy_assignable;
+    template<typename Tp>                       struct is_trivially_move_assignable;
+    template<typename Tp>                       struct is_trivially_destructible;
 
-    template <class T> struct is_trivially_copyable;
-    template <class T> struct is_trivial;
-    template <class T> struct is_standard_layout;
-    template <class T> struct is_empty;
-    template <class T> struct is_polymorphic;
-    template <class T> struct is_abstract;
-    template <class T> struct is_final; // C++14
-    template <class T> struct is_aggregate; // C++17
+    template<typename Tp>                       struct is_trivially_copyable;
+    template<typename Tp>                       struct is_trivial;
+    template<typename Tp>                       struct is_standard_layout;
+    template<typename Tp>                       struct is_empty;
+    template<typename Tp>                       struct is_polymorphic;
+    template<typename Tp>                       struct is_abstract;
+    template<typename Tp>                       struct is_final;
+    template<typename Tp>                       struct is_aggregate;
 
-    template <class T, class... Args> struct is_nothrow_constructible;
-    template <class T>                struct is_nothrow_default_constructible;
-    template <class T>                struct is_nothrow_copy_constructible;
-    template <class T>                struct is_nothrow_move_constructible;
-    template <class T, class U>       struct is_nothrow_assignable;
-    template <class T>                struct is_nothrow_copy_assignable;
-    template <class T>                struct is_nothrow_move_assignable;
-    template <class T, class U>       struct is_nothrow_swappable_with; // C++17
-    template <class T>                struct is_nothrow_swappable;      // C++17
-    template <class T>                struct is_nothrow_destructible;
+    template<typename Tp, typename ... Args>    struct is_nothrow_constructible;
+    template<typename Tp>                       struct is_nothrow_default_constructible;
+    template<typename Tp>                       struct is_nothrow_copy_constructible;
+    template<typename Tp>                       struct is_nothrow_move_constructible;
+    template<typename Tp, typename Up>          struct is_nothrow_assignable;
+    template<typename Tp>                       struct is_nothrow_copy_assignable;
+    template<typename Tp>                       struct is_nothrow_move_assignable;
+    template<typename Tp, typename Up>          struct is_nothrow_swappable_with;
+    template<typename Tp>                       struct is_nothrow_swappable;
+    template<typename Tp>                       struct is_no_throw_destructible;
 
-    template <class T> struct has_virtual_destructor;
-
-    template<class T> struct has_unique_object_representations;         // C++17
+    template<typename Tp>                       struct has_virtual_destructor;
+    template<typename Tp>                       struct has_unique_object_representations;
 
     // Relationships between types:
-    template <class Base, class Derived> struct is_base_of;
-    template <class From, class To> struct is_convertible;
-    template <typename From, typename To> struct is_nothrow_convertible;                  // C++20
-    template <typename From, typename To> inline constexpr bool is_nothrow_convertible_v; // C++20
+    template<typename Base, typename Derived>   struct is_base_of;
+    template<typename From, typename To>        struct is_convertible;
+    template<typename From, typename To>        struct is_no_throw_convertible
 
     // Alignment properties and transformations:
     template<typename Tp> struct alignment_of;
