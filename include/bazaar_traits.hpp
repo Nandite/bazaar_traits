@@ -438,7 +438,7 @@ namespace bazaar::traits {
 
     //Is compound
     template<typename Tp>
-    struct is_compound : public bool_constant<!is_fundamental_v<Tp>> {};
+    struct is_compound : public negation<is_fundamental<Tp>> {};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_compound_v{is_compound<Tp>::value};
