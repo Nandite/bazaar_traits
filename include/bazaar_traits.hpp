@@ -477,7 +477,7 @@ namespace bazaar::traits {
 #endif
 
     template<typename Tp>
-    inline constexpr auto is_enum_v{is_enum<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_enum_v{is_enum<Tp>::value};
 
     //-------------------------------------------------------------------------------------------
     // Secondary classification traits
