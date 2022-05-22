@@ -65,7 +65,6 @@ namespace bazaar
     template<typename Tp> struct add_const;
     template<typename Tp> struct add_volatile;
     template<typename Tp> struct add_cv;
-    template<typename In, typename Out> struct apply_cv;
 
     // Primary classification traits:
     template<typename Tp> struct is_void;

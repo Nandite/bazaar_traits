@@ -219,13 +219,13 @@ namespace bazaar::traits {
 
         template<typename In, typename Out>
         struct apply_cv_impl<In&, Out, true, true> : public identity<const volatile Out&>{};
+
+        template<typename In, typename Out>
+        struct apply_cv : public impl::apply_cv_impl<In, Out> {};
+
+        template<typename In, typename Out>
+        using apply_cv_t [[maybe_unused]] = typename apply_cv<In,Out>::type;
     }
-
-    template<typename In, typename Out>
-    struct apply_cv : public impl::apply_cv_impl<In, Out> {};
-
-    template<typename In, typename Out>
-    using apply_cv_t [[maybe_unused]] = typename apply_cv<In,Out>::type;
 
     //-------------------------------------------------------------------------------------------
     // Primary classification traits
@@ -358,8 +358,13 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr bool is_array_v = is_array<Tp>::value;
 
     // Is pointer
-    template<typename Tp> struct is_pointer : public false_type {};
-    template<typename Tp> struct is_pointer<Tp*> : public true_type {};
+    namespace impl {
+        template<typename Tp> struct is_pointer_impl : public false_type {};
+        template<typename Tp> struct is_pointer_impl<Tp*> : public true_type {};
+    }
+
+    template<typename Tp>
+    struct is_pointer : public impl::is_pointer_impl<remove_cv_t<Tp>> {};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_pointer_v{is_pointer<Tp>::value};
@@ -393,7 +398,7 @@ namespace bazaar::traits {
     // Is function
     template<typename Tp>
     struct is_function : public negation<
-            disjunction<is_const<Tp>, is_reference<Tp>>>{};
+            disjunction<is_const<const Tp>, is_reference<Tp>>>{};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_function_v {is_function<Tp>::value};
@@ -415,20 +420,38 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_member_pointer_v{is_member_pointer<Tp>::value};
 
     // Is member object pointer
+    namespace impl{
+        template<typename Tp>
+        struct is_member_object_pointer_impl : public false_type {};
+
+        template<typename Tp, typename Up>
+        struct is_member_object_pointer_impl<Tp Up::*> :
+                public negation<is_function<Tp>>{};
+    }
+
     template<typename Tp>
-    struct is_member_object_pointer : public conjunction<
-            is_member_pointer<Tp>,
-            negation<is_function<Tp>>
-            >{};
+    struct is_member_object_pointer : public
+        impl::is_member_object_pointer_impl<remove_cv_t<Tp>>
+    {};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_member_object_pointer_v {is_member_object_pointer<Tp>::value};
 
     // Is member function pointer
+    namespace impl {
+
+        template<typename Tp>
+        struct is_member_function_pointer_impl : public false_type {};
+
+        template<typename Tp, typename Up>
+        struct is_member_function_pointer_impl<Tp Up::*> :
+                public is_function<Tp>{};
+    }
+
     template<typename Tp>
-    struct is_member_function_pointer : public conjunction<
-            is_member_pointer<Tp>,
-            is_function<Tp>>{};
+    struct is_member_function_pointer : public
+            impl::is_member_function_pointer_impl<remove_cv_t<Tp>>
+    {};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_member_function_pointer_v {is_member_function_pointer<Tp>::value};
@@ -481,21 +504,24 @@ namespace bazaar::traits {
 
     namespace impl
     {
-        template <typename Tp, typename = decltype(sizeof(std::declval<Tp>()))>
+        template<typename Tp>
+        using is_complete_helper = decltype(sizeof(std::declval<Tp>()));
+
+        template <typename Tp, typename = void_t<is_complete_helper<Tp>>>
         [[maybe_unused]] static true_type test_is_complete(Tp*);
-        template <typename> static false_type test_is_complete(...);
+        template <typename, typename = void> static false_type test_is_complete(...);
 
         template<typename Tp>
-        struct is_complete_impl : public identity<decltype(test_is_complete<Tp>(nullptr))> {};
+        struct is_complete_impl : public decltype(test_is_complete<Tp>(nullptr)) {};
     }
 
     template<typename Tp>
-    struct is_complete : disjunction<
+    struct is_complete : public disjunction<
             is_function<remove_reference_t<Tp>>,
             impl::is_complete_impl<Tp>> {};
 
     template<typename Tp>
-    struct is_complete<Tp&> : is_complete<remove_reference_t<Tp>> {};
+    struct is_complete<Tp&> : public is_complete<remove_reference_t<Tp>> {};
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_complete_v{is_complete<Tp>::value};
@@ -662,7 +688,7 @@ namespace bazaar::traits {
     }
 
     template<typename Tp>
-    struct make_signed : identity<typename apply_cv<Tp,
+    struct make_signed : identity<typename impl::apply_cv<Tp,
             impl::make_signed_impl<remove_cv_t<Tp>>>::type> {};
 
     template<typename Tp>
@@ -692,7 +718,7 @@ namespace bazaar::traits {
     }
 
     template<typename Tp>
-    struct make_unsigned : identity<typename apply_cv<Tp,
+    struct make_unsigned : identity<typename impl::apply_cv<Tp,
             impl::make_unsigned_impl<remove_cv_t<Tp>>>::type> {};
 
     template<typename Tp>
