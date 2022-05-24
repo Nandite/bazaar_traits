@@ -19,8 +19,8 @@ namespace bazaar::traits {
         };
         template<typename Hd, typename Nt>
         struct type_list_impl {
-            using Head = Hd;
-            using Next = Nt;
+            using Head [[maybe_unused]] = Hd;
+            using Next [[maybe_unused]] = Nt;
         };
     }
 
@@ -44,7 +44,7 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename TypeList, std::size_t Size, bool = Size <= sizeof(typename TypeList::Head)>
-        struct find_first_upper_bound_element_by_size;
+        struct find_first_upper_bound_element_by_size {};
 
         template<typename Head, typename Next, std::size_t Size>
         struct find_first_upper_bound_element_by_size<type_list_t<Head, Next>, Size, true>{
