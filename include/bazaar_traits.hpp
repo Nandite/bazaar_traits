@@ -200,6 +200,9 @@ namespace bazaar::traits {
         struct apply_cv_impl : public identity<Out> {};
 
         template<typename In, typename Out>
+        struct apply_cv_impl<In, Out, false, false> : public identity<Out>{};
+
+        template<typename In, typename Out>
         struct apply_cv_impl<In, Out, true, false> : public identity<const Out>{};
 
         template<typename In, typename Out>
@@ -223,8 +226,6 @@ namespace bazaar::traits {
         template<typename In, typename Out>
         struct apply_cv : public impl::apply_cv_impl<In, Out> {};
 
-        template<typename In, typename Out>
-        using apply_cv_t [[maybe_unused]] = typename apply_cv<In,Out>::type;
     }
 
     //-------------------------------------------------------------------------------------------
@@ -631,7 +632,7 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename Tp, bool = is_integral_v<Tp>>
-        struct is_signed_impl  : public bool_condition<Tp(-1) < Tp(0)>{};
+    struct is_signed_impl  : public bool_condition<Tp(-1) < Tp(0)>::type {};
 
         template<typename Tp> // floating point is signed by default
         struct is_signed_impl<Tp, false> : public true_type {};
@@ -650,7 +651,7 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename Tp, bool = is_integral_v<Tp>>
-        struct is_unsigned_impl  : public bool_condition<Tp(0) < Tp(-1)>{};
+        struct is_unsigned_impl  : public bool_condition<Tp(0) < Tp(-1)>::type {};
 
         template<typename Tp> // floating point is signed by default
         struct is_unsigned_impl<Tp, false> : public false_type {};
@@ -672,24 +673,57 @@ namespace bazaar::traits {
         struct make_signed_impl {};
 
         template<typename Tp>
-        struct make_signed_impl<Tp, true> : public identity<
-                typename impl::find_first_upper_bound_element_by_size<signed_types_list, sizeof(Tp)>::type
-                > {};
+        struct make_signed_impl<Tp, true> {
+            using type = typename make_signed_impl<typename
+            impl::find_first_upper_bound_element_by_size<signed_types_list,
+                    sizeof(Tp)>::type>::type;
+        };
 
-        template<> struct make_signed_impl <bool, true> {};
-        template<> struct make_signed_impl <signed short, true> : public identity<short>{};
-        template<> struct make_signed_impl <unsigned short, true> : public identity<short>{};
-        template<> struct make_signed_impl <signed int, true> : public identity<int>{};
-        template<> struct make_signed_impl <unsigned int, true> : public identity<int>{};
-        template<> struct make_signed_impl <signed long, true> : public identity<long>{};
-        template<> struct make_signed_impl <unsigned long, true> : public identity<long>{};
-        template<> struct make_signed_impl <signed long long, true> : public identity<long long>{};
-        template<> struct make_signed_impl <unsigned long long, true> : public identity<long long>{};
+        template<> struct make_signed_impl <bool, true>;
+        template<> struct make_signed_impl <signed char, true> : public identity<signed char>{};
+        template<> struct make_signed_impl <unsigned char, true> : public identity<signed char>{};
+        template<> struct make_signed_impl <signed short, true> : public identity<signed short>{};
+        template<> struct make_signed_impl <unsigned short, true> : public identity<signed short>{};
+        template<> struct make_signed_impl <signed int, true> : public identity<signed int>{};
+        template<> struct make_signed_impl <unsigned int, true> : public identity<signed int>{};
+        template<> struct make_signed_impl <signed long, true> : public identity<signed long>{};
+        template<> struct make_signed_impl <unsigned long, true> : public identity<signed long>{};
+        template<> struct make_signed_impl <signed long long, true> : public identity<signed long long>{};
+        template<> struct make_signed_impl <unsigned long long, true> : public identity<signed long long>{};
+
+        template<>
+        struct make_signed_impl<wchar_t, false> {
+            using type = typename make_signed_impl<typename
+            impl::find_first_upper_bound_element_by_size<signed_types_list,
+                    sizeof(wchar_t)>::type>::type;
+        };
+
+        template<>
+        struct make_signed_impl<char8_t, false> {
+            using type = typename make_signed_impl<typename
+            impl::find_first_upper_bound_element_by_size<signed_types_list,
+                    sizeof(char8_t)>::type>::type;
+        };
+
+        template<>
+        struct make_signed_impl<char16_t, false> {
+            using type = typename make_signed_impl<typename
+            impl::find_first_upper_bound_element_by_size<signed_types_list,
+                    sizeof(char16_t)>::type>::type;
+        };
+
+        template<>
+        struct make_signed_impl<char32_t, false> {
+            using type = typename make_signed_impl<typename
+            impl::find_first_upper_bound_element_by_size<signed_types_list,
+                    sizeof(char32_t)>::type>::type;
+        };
     }
 
     template<typename Tp>
-    struct make_signed : identity<typename impl::apply_cv<Tp,
-            impl::make_signed_impl<remove_cv_t<Tp>>>::type> {};
+    struct make_signed : public impl::apply_cv<Tp,
+            typename impl::make_signed_impl<remove_cv_t<Tp>>::type
+            > {};
 
     template<typename Tp>
     using make_signed_t [[maybe_unused]] = typename make_signed<Tp>::type;
@@ -701,25 +735,56 @@ namespace bazaar::traits {
         struct make_unsigned_impl {};
 
         template<typename Tp>
-        struct make_unsigned_impl<Tp, true> : public identity<
-                typename impl::find_first_upper_bound_element_by_size<unsigned_types_list,
-                sizeof(Tp)>::type
-        > {};
+        struct make_unsigned_impl<Tp, true> {
+            using type = typename make_unsigned_impl<
+                    typename impl::find_first_upper_bound_element_by_size<unsigned_types_list,
+                            sizeof(Tp)>::type>::type;
+        };
 
         template<> struct make_unsigned_impl <bool, true> {};
-        template<> struct make_unsigned_impl <signed short, true> : public identity<short>{};
-        template<> struct make_unsigned_impl <unsigned short, true> : public identity<short>{};
-        template<> struct make_unsigned_impl <signed int, true> : public identity<int>{};
-        template<> struct make_unsigned_impl <unsigned int, true> : public identity<int>{};
-        template<> struct make_unsigned_impl <signed long, true> : public identity<long>{};
-        template<> struct make_unsigned_impl <unsigned long, true> : public identity<long>{};
-        template<> struct make_unsigned_impl <signed long long, true> : public identity<long long>{};
-        template<> struct make_unsigned_impl <unsigned long long, true> : public identity<long long>{};
+        template<> struct make_unsigned_impl <signed char, true> : public identity<unsigned char>{};
+        template<> struct make_unsigned_impl <unsigned char, true> : public identity<unsigned char>{};
+        template<> struct make_unsigned_impl <signed short, true> : public identity<unsigned short>{};
+        template<> struct make_unsigned_impl <unsigned short, true> : public identity<unsigned short>{};
+        template<> struct make_unsigned_impl <signed int, true> : public identity<unsigned int>{};
+        template<> struct make_unsigned_impl <unsigned int, true> : public identity<unsigned int>{};
+        template<> struct make_unsigned_impl <signed long, true> : public identity<unsigned long>{};
+        template<> struct make_unsigned_impl <unsigned long, true> : public identity<unsigned long>{};
+        template<> struct make_unsigned_impl <signed long long, true> : public identity<unsigned long long>{};
+        template<> struct make_unsigned_impl <unsigned long long, true> : public identity<unsigned long long>{};
+
+        template<>
+        struct make_unsigned_impl<wchar_t, false> {
+            using type = typename make_unsigned_impl<typename
+            impl::find_first_upper_bound_element_by_size<unsigned_types_list ,
+                    sizeof(wchar_t)>::type>::type;
+        };
+
+        template<>
+        struct make_unsigned_impl<char8_t, false> {
+            using type = typename make_unsigned_impl<typename
+            impl::find_first_upper_bound_element_by_size<unsigned_types_list ,
+                    sizeof(char8_t)>::type>::type;
+        };
+
+        template<>
+        struct make_unsigned_impl<char16_t, false> {
+            using type = typename make_unsigned_impl<typename
+            impl::find_first_upper_bound_element_by_size<unsigned_types_list ,
+                    sizeof(char16_t)>::type>::type;
+        };
+
+        template<>
+        struct make_unsigned_impl<char32_t, false> {
+            using type = typename make_unsigned_impl<typename
+            impl::find_first_upper_bound_element_by_size<unsigned_types_list ,
+                    sizeof(char32_t)>::type>::type;
+        };
     }
 
     template<typename Tp>
-    struct make_unsigned : identity<typename impl::apply_cv<Tp,
-            impl::make_unsigned_impl<remove_cv_t<Tp>>>::type> {};
+    struct make_unsigned : impl::apply_cv<Tp,
+            typename impl::make_unsigned_impl<remove_cv_t<Tp>>::type> {};
 
     template<typename Tp>
     using make_unsigned_t [[maybe_unused]] = typename make_unsigned<Tp>::type;
@@ -742,7 +807,7 @@ namespace bazaar::traits {
     };
 
     template<typename Tp, typename ... Args>
-    [[maybe_unused]] inline constexpr auto is_constructible_v = is_constructible<Tp, Args...>::value;
+    [[maybe_unused]] inline constexpr auto is_constructible_v {is_constructible<Tp, Args...>::value};
 
     // Is default constructible
     template<typename Tp>
