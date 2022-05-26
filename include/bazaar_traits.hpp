@@ -255,7 +255,7 @@ namespace bazaar::traits {
             void volatile,
             void const volatile>{};
 
-    // Alternate
+    // Alternate design
     //    template<typename Tp>
     //    struct [[maybe_unused]] is_void {
     //        static constexpr bool value = is_same_v<std::remove_cv_t<Tp>, void>
@@ -264,11 +264,11 @@ namespace bazaar::traits {
     //                                      is_same_v<std::remove_cv_t<Tp>, void const volatile>;
     //    };
 
-    // Alternate
+    // Alternate design
     //    template<typename Tp>
     //    struct [[maybe_unused]] is_void : public is_same<remove_cv_t<Tp>, void>::type {};
 
-    // Alternate
+    // Alternate design
     //        template<typename Tp> struct [[maybe_unused]] is_void : public false_type {};
     //        template<> struct [[maybe_unused]] is_void<void> : public true_type {};
     //        template<> struct [[maybe_unused]] is_void<void const> : public true_type {};
@@ -276,14 +276,14 @@ namespace bazaar::traits {
     //        template<> struct [[maybe_unused]] is_void<void const volatile> : public true_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_void_v = is_void<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_void_v{is_void<Tp>::value};
 
     // Is nullptr
     namespace impl {
         template<typename Tp>
         struct is_null_pointer_impl {static constexpr bool value{is_same_v<remove_cv_t<Tp>, nullptr_t>};};
 
-        // Alternate
+        // Alternate design
         //    template<typename Tp>
         //    struct is_null_pointer_impl : public is_same<remove_cv_t<Tp>, nullptr_t>::type{};
     }
@@ -292,10 +292,9 @@ namespace bazaar::traits {
     struct is_null_pointer : public impl::is_null_pointer_impl<Tp>{};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_null_pointer_v = is_null_pointer<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_null_pointer_v{is_null_pointer<Tp>::value};
 
     // Is integral and floating
-    // Integral and floating points
     namespace impl
     {
         template<typename Tp> struct is_integral_impl : public false_type {};
@@ -338,24 +337,24 @@ namespace bazaar::traits {
     template<typename Tp>
     struct is_integral : public impl::is_integral_impl<remove_cv_t<Tp>> {};
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_integral_v = is_integral<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_integral_v{is_integral<Tp>::value};
 
     template<typename Tp>
     struct is_floating_point : public impl::is_floating_point_impl<remove_cv_t<Tp>> {};
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_floating_v = is_floating_point<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_floating_v{is_floating_point<Tp>::value};
 
     template<typename Tp>
     struct is_signed_integer : public conjunction<is_integral<remove_cv_t<Tp>>,
             impl::is_signed_integer_impl<remove_cv_t<Tp>>>{};
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_signed_integer_v = is_signed_integer<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_signed_integer_v{is_signed_integer<Tp>::value};
 
     template<typename Tp>
     struct is_unsigned_integer : public conjunction<is_integral<remove_cv_t<Tp>>,
             impl::is_unsigned_integer_impl<remove_cv_t<Tp>>>{};
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_unsigned_integer_v = is_unsigned_integer<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_unsigned_integer_v{is_unsigned_integer<Tp>::value};
 
     // Is arithmetic
     template<typename Tp>
@@ -367,7 +366,7 @@ namespace bazaar::traits {
 //    struct is_arithmetic : public impl::is_true_one_of<typename is_integral<Tp>::type,
 //            typename is_floating_point<Tp>::type>{};
 
-    // Alternate
+    // Alternate design
     // template<typename Tp>
     // struct is_arithmetic : public bool_constant<is_integral_v<Tp> || is_floating_v<Tp>>{};
 
@@ -380,7 +379,7 @@ namespace bazaar::traits {
     template<typename Tp, std::size_t N> struct is_array<Tp[N]> : public true_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr bool is_array_v = is_array<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_array_v{is_array<Tp>::value};
 
     // Is pointer
     namespace impl {
@@ -399,26 +398,26 @@ namespace bazaar::traits {
     template<typename Tp> struct is_lvalue_reference<Tp&> : public true_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_lvalue_reference_v = is_lvalue_reference<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_lvalue_reference_v{is_lvalue_reference<Tp>::value};
 
     // Is rvalue reference
     template<typename Tp> struct is_rvalue_reference : public false_type {};
     template<typename Tp> struct is_rvalue_reference<Tp&&> : public true_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_rvalue_reference_v = is_rvalue_reference<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_rvalue_reference_v{is_rvalue_reference<Tp>::value};
 
     // Is reference
     template<typename Tp>
     struct is_reference : public disjunction<is_lvalue_reference<Tp>, is_rvalue_reference<Tp>> {};
 
-    // Alternate
+    // Alternate design
 //    template<typename Tp> struct is_reference : public false_type {};
 //    template<typename Tp> struct is_reference<Tp&> : public true_type {};
 //    template<typename Tp> struct is_reference<Tp&&> : public true_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_reference_v = is_reference<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_reference_v{is_reference<Tp>::value};
 
     // Is function
     template<typename Tp>
@@ -426,7 +425,7 @@ namespace bazaar::traits {
             disjunction<is_const<const Tp>, is_reference<Tp>>>{};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_function_v {is_function<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_function_v{is_function<Tp>::value};
 
     // Is member pointer
     namespace impl
@@ -460,7 +459,7 @@ namespace bazaar::traits {
     {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_member_object_pointer_v {is_member_object_pointer<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_member_object_pointer_v{is_member_object_pointer<Tp>::value};
 
     // Is member function pointer
     namespace impl {
@@ -479,7 +478,7 @@ namespace bazaar::traits {
     {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_member_function_pointer_v {is_member_function_pointer<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_member_function_pointer_v{is_member_function_pointer<Tp>::value};
 
     // Is member union
 #if (__has_feature(is_union) || defined(_LIBCPP_COMPILER_GCC))
@@ -572,7 +571,7 @@ namespace bazaar::traits {
                 is_null_pointer<Tp>>{};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_fundamental_v {is_fundamental<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_fundamental_v{is_fundamental<Tp>::value};
 
     // Is scalar
     template<typename Tp>
@@ -586,7 +585,7 @@ namespace bazaar::traits {
             > {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_scalar_v {is_scalar<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_scalar_v{is_scalar<Tp>::value};
 
     // Is object
     template<typename Tp>
@@ -596,7 +595,7 @@ namespace bazaar::traits {
                 negation<is_void<Tp>>>{};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_object_v {is_object<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_object_v{is_object<Tp>::value};
 
     //Is compound
     template<typename Tp>
@@ -619,7 +618,7 @@ namespace bazaar::traits {
         struct remove_pointer_impl<Tp, true> : public identity<typename remove_pointer_helper<Tp>::type> {};
     }
 
-    // Alternate
+    // Alternate design
     // template<typename Tp> struct remove_pointer : identity<Tp> {};
     // template<typename Tp> struct remove_pointer<Tp*> : identity<Tp> {};
     // template<typename Tp> struct remove_pointer<Tp* const> : identity<Tp> {};
@@ -656,7 +655,7 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename Tp, bool = is_integral_v<Tp>>
-    struct is_signed_impl  : public bool_condition<Tp(-1) < Tp(0)>::type {};
+        struct is_signed_impl  : public bool_condition<Tp(-1) < Tp(0)>::type {};
 
         template<typename Tp> // floating point is signed by default
         struct is_signed_impl<Tp, false> : public true_type {};
@@ -669,7 +668,7 @@ namespace bazaar::traits {
     struct is_signed<Tp, false> : public false_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_signed_v {is_signed<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_signed_v{is_signed<Tp>::value};
 
     // Is unsigned
     namespace impl
@@ -688,7 +687,7 @@ namespace bazaar::traits {
     struct is_unsigned<Tp, false> : public false_type {};
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_unsigned_v {is_unsigned<Tp>::value};
+    [[maybe_unused]] inline constexpr auto is_unsigned_v{is_unsigned<Tp>::value};
 
     // Make signed
     namespace impl
@@ -841,7 +840,7 @@ namespace bazaar::traits {
     };
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_default_constructible_v = is_default_constructible<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_default_constructible_v{is_default_constructible<Tp>::value};
 
     // Is copy constructible
     namespace impl
@@ -861,7 +860,7 @@ namespace bazaar::traits {
     };
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_copy_constructible_v = is_copy_constructible<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_copy_constructible_v{is_copy_constructible<Tp>::value};
 
     // Is move constructible
     template<typename Tp>
@@ -872,7 +871,7 @@ namespace bazaar::traits {
     };
 
     template<typename Tp>
-    [[maybe_unused]] inline constexpr auto is_move_constructible_v = is_move_constructible<Tp>::value;
+    [[maybe_unused]] inline constexpr auto is_move_constructible_v{is_move_constructible<Tp>::value};
 
 
     // Is assignable
@@ -916,7 +915,7 @@ namespace bazaar::traits {
     struct is_assignable : public impl::is_assignable_impl<Tp, Up> {};
 
     template<typename Tp, typename Up>
-    [[maybe_unused]] static constexpr bool is_assignable_v = is_assignable<Tp, Up>::value;
+    [[maybe_unused]] static constexpr bool is_assignable_v{is_assignable<Tp, Up>::value};
 
     // Is copy assignable
     template<typename Tp>
@@ -927,7 +926,7 @@ namespace bazaar::traits {
     };
 
     template<typename Tp>
-    [[maybe_unused]] static constexpr auto is_copy_assignable_v {is_copy_assignable<Tp>::value};
+    [[maybe_unused]] static constexpr auto is_copy_assignable_v{is_copy_assignable<Tp>::value};
 
     // Is move assignable
     template<typename Tp>
@@ -978,7 +977,7 @@ namespace bazaar::traits {
                       "Template argument must be a complete type or an unbounded array");
     };
 
-    // Alternate
+    // Alternate design
 //    template<typename Tp>
 //    struct is_swappable : public conditional_t<
 //            impl::is_referenceable<Tp>::value && negation_v<is_void<Tp>> ,
@@ -1229,7 +1228,6 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_empty_v{is_empty<Tp>::value};
 
     // Is polymorphic
-
 #if (__has_feature(is_polymorphic) || defined(_LIBCPP_COMPILER_GCC))
     template<typename Tp>
     struct is_polymorphic : public bool_constant<__is_polymorphic(Tp)>{};
@@ -1472,7 +1470,6 @@ namespace bazaar::traits {
     //-------------------------------------------------------------------------------------------
 
     // Is base of
-
     namespace impl
     {
         template<typename Base>
@@ -1609,7 +1606,6 @@ namespace bazaar::traits {
     using decay_t [[maybe_unused]] = typename decay<Tp>::type;
 
     // Remove cvref
-
     namespace impl
     {
         template<typename Tp, bool = is_reference_v<Tp> >
