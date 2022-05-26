@@ -110,8 +110,8 @@ namespace bazaar::traits {
         template<typename> is_non_referenceable_type test_is_referenceable(...);
         template<typename Tp>
         struct is_referenceable
-                : public bool_condition<is_not_same_v<is_non_referenceable_type,
-                        decltype(test_is_referenceable<Tp>(0))>>::type {
+                : public is_not_same<is_non_referenceable_type,
+                        decltype(test_is_referenceable<Tp>(0))> {
         };
     }
 
@@ -234,7 +234,11 @@ namespace bazaar::traits {
 
     // Is void
     template<typename Tp>
-    struct is_void : public is_one_of<Tp, void, void const, void volatile, void const volatile>{};
+    struct is_void : public impl::is_one_of<Tp,
+            void,
+            void const,
+            void volatile,
+            void const volatile>{};
 
     // Alternate
     //    template<typename Tp>
@@ -340,8 +344,13 @@ namespace bazaar::traits {
 
     // Is arithmetic
     template<typename Tp>
-    struct is_arithmetic : public is_true_one_of<typename is_integral<Tp>::type,
-            typename is_floating_point<Tp>::type>{};
+    struct is_arithmetic : public disjunction<is_integral<Tp>,
+            is_floating_point<Tp>>{};
+
+    // Alternate design
+//    template<typename Tp>
+//    struct is_arithmetic : public impl::is_true_one_of<typename is_integral<Tp>::type,
+//            typename is_floating_point<Tp>::type>{};
 
     // Alternate
     // template<typename Tp>
@@ -820,9 +829,18 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_default_constructible_v = is_default_constructible<Tp>::value;
 
     // Is copy constructible
+    namespace impl
+    {
+        template<typename Tp, bool = is_referenceable<Tp>::value>
+        struct is_copy_constructible_impl : public is_constructible<Tp,
+                        add_lvalue_reference_t<add_const_t<Tp>>> {};
+
+        template<typename Tp>
+        struct is_copy_constructible_impl<Tp, false> : public false_type {};
+    }
+
     template<typename Tp>
-    struct is_copy_constructible : public is_constructible<Tp,
-                add_lvalue_reference_t<add_const_t<Tp>>>{
+    struct is_copy_constructible : public impl::is_copy_constructible_impl<Tp>{
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
     };
@@ -1013,9 +1031,19 @@ namespace bazaar::traits {
     auto is_trivially_default_constructible_v{is_trivially_default_constructible<Tp>::value};
 
     // Is trivially copy constructible
+    namespace impl
+    {
+        template<typename Tp, bool = is_referenceable<Tp>::value>
+        struct is_trivially_copy_constructible_impl :  public
+                is_trivially_constructible<Tp, add_lvalue_reference_t<add_const_t<Tp>>> {};
+
+        template<typename Tp>
+        struct is_trivially_copy_constructible_impl<Tp, false> :  public false_type  {};
+    }
+
     template<typename Tp>
     struct is_trivially_copy_constructible : public
-            is_trivially_constructible<Tp, add_lvalue_reference_t<add_const_t<Tp>>>{
+            impl::is_trivially_copy_constructible_impl<Tp> {
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
     };
@@ -1244,11 +1272,20 @@ namespace bazaar::traits {
     auto is_nothrow_default_constructible_v{is_nothrow_default_constructible<Tp>::value};
 
     // Is no throw copy constructible
+    namespace impl
+    {
+        template<typename Tp, bool = impl::is_referenceable<Tp>::value>
+        struct is_nothrow_copy_constructible_impl  :
+                public is_nothrow_constructible<Tp,
+                add_lvalue_reference_t<add_const_t<Tp>>>{};
+
+        template<typename Tp>
+        struct is_nothrow_copy_constructible_impl<Tp, false>  : public false_type {};
+    }
+
     template<typename Tp>
     struct is_nothrow_copy_constructible :
-            public bool_constant<is_nothrow_constructible_v< Tp,
-            add_lvalue_reference_t<add_const<Tp>>
-            >>{
+        public impl::is_nothrow_copy_constructible_impl<Tp>{
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
     };
@@ -1275,20 +1312,14 @@ namespace bazaar::traits {
     namespace impl
     {
         template<typename Tp, typename Up>
-        using is_no_throw_assignable_helper_t = decltype(noexcept(std::declval<Tp>() = std::declval<Up>()));
-
-        template<typename , typename , typename  = void>
-        struct is_no_throw_assignable_impl : public false_type {};
-
-        template<typename Tp, typename Up>
-        struct is_no_throw_assignable_impl<Tp, Up,
-                void_t<is_no_throw_assignable_helper_t<Tp, Up>>> : public true_type {};
+        struct is_nothrow_assignable_impl :
+                public bool_constant<noexcept(std::declval<Tp>() = std::declval<Up>())> {};
     }
 
     template<typename Tp, typename Up>
     struct is_nothrow_assignable : public conjunction<
             is_assignable<Tp,Up>,
-            impl::is_no_throw_assignable_impl<Tp, Up>
+            impl::is_nothrow_assignable_impl<Tp, Up>
             > {
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
@@ -1341,9 +1372,7 @@ namespace bazaar::traits {
     }
 
     template<typename Tp, typename Up>
-    struct is_nothrow_swappable_with : public conjunction<
-            impl::is_nothrow_swappable_with_impl<Tp, Up>
-    > {
+    struct is_nothrow_swappable_with : public impl::is_nothrow_swappable_with_impl<Tp, Up> {
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
         static_assert(impl::is_complete_or_unbounded_v<Up>,
@@ -1371,15 +1400,13 @@ namespace bazaar::traits {
     // Is no throw destructible
     namespace impl
     {
-        template<typename Tp>
-        using is_no_throw_destructible_helper_t = decltype(noexcept(std::declval<Tp&>().~Tp()));
-
         template<typename , typename = void>
         struct is_nothrow_destructible_impl : public false_type {};
 
         template<typename Tp>
         struct is_nothrow_destructible_impl<Tp,
-                void_t<is_no_throw_destructible_helper_t<Tp>>> : public true_type {};
+                void_t<decltype(noexcept(std::declval<Tp&>().~Tp()))>> :
+                public bool_constant<noexcept(std::declval<Tp&>().~Tp())> {};
     }
 
     template<typename Tp>
@@ -1396,7 +1423,7 @@ namespace bazaar::traits {
 
     template<typename Tp>
     [[maybe_unused]] static constexpr
-    auto is_no_throw_destructible_v{is_no_throw_destructible<Tp>::value};
+    auto is_nothrow_destructible_v{is_no_throw_destructible<Tp>::value};
 
     // Has virtual destructor
 #if (__has_feature(has_virtual_destructor) || defined(_LIBCPP_COMPILER_GCC))
@@ -1430,6 +1457,28 @@ namespace bazaar::traits {
     //-------------------------------------------------------------------------------------------
 
     // Is base of
+
+    namespace impl
+    {
+        template<typename Base>
+        true_type test_if_base_of(const volatile Base*);
+        template<typename >
+        false_type test_if_base_of(const volatile void*);
+        template <typename Base, typename Derived>
+        using is_base_of_helper = decltype(test_if_base_of<Base>(std::declval<Derived*>()));
+
+        template<typename , typename, typename = void >
+        struct is_base_of_impl : public true_type {};
+
+        template<typename Base, typename Derived>
+        struct is_base_of_impl<Base, Derived, void_t<is_base_of_helper<Base, Derived>>>:
+                public is_base_of_helper<Base,Derived>{};
+    }
+
+//    template<typename Base, typename Derived>
+//    struct is_base_of : public conjunction<is_class<Base>, is_class<Derived>,
+//            impl::is_base_of_impl<Base, Derived>> {};
+
     template<typename Base, typename Derived>
     struct is_base_of : public bool_constant<__is_base_of(Base, Derived)>{};
 
@@ -1469,32 +1518,48 @@ namespace bazaar::traits {
     // Is no throw convertible
     namespace impl
     {
-        template<typename ConvertTo> static void test_no_throw_convertibility(ConvertTo) noexcept{};
-        template<typename ConvertFrom, typename ConvertTo>
-        using is_no_throw_convertible_helper_t = decltype(noexcept(
-                test_no_throw_convertibility<ConvertTo>(std::declval<ConvertFrom>())));
-
-        template<typename, typename, typename = void>
-        struct is_no_throw_convertible_from_to : public false_type{};
+        template<typename ConvertTo> static void try_nothrow_convertibility(ConvertTo) noexcept;
 
         template<typename From, typename To>
-        struct is_no_throw_convertible_from_to<From,To, void_t<is_no_throw_convertible_helper_t<From,To>>> :
-                public true_type {};
+        bool_constant<noexcept(try_nothrow_convertibility<To>(std::declval<From>()))>
+        test_nothrow_convertibility(int);
+        template<typename , typename> static false_type test_nothrow_convertibility(...);
 
         template<typename From, typename To,
                 bool = disjunction_v<is_void<From>, is_function<To>, is_array<To>>>
-        struct is_no_throw_convertible_impl : public is_void<To>{};
+        struct is_nothrow_convertible_impl : public is_void<To>{};
 
         template<typename From, typename To>
-        struct is_no_throw_convertible_impl<From, To, false> :
-                public is_no_throw_convertible_from_to<From,To> {};
+        struct is_nothrow_convertible_impl<From, To, false> :
+                public decltype(test_nothrow_convertibility<From,To>(0)) {};
+
+        // Alternate design
+//        template<typename ConvertFrom, typename ConvertTo>
+//        using is_nothrow_convertible_helper_t = decltype(noexcept(
+//                try_nothrow_convertibility<ConvertTo>(std::declval<ConvertFrom>())));
+//
+//        template<typename, typename, typename = void>
+//        struct is_nothrow_convertible_from_to : public false_type{};
+//
+//        template<typename From, typename To>
+//        struct is_nothrow_convertible_from_to<From,To, void_t<is_nothrow_convertible_helper_t<From,To>>> :
+//                public bool_constant<noexcept(
+//                        try_nothrow_convertibility<To>(std::declval<From>()))> {};
+//
+//        template<typename From, typename To,
+//                bool = disjunction_v<is_void<From>, is_function<To>, is_array<To>>>
+//        struct is_nothrow_convertible_impl : public is_void<To>{};
+//
+//        template<typename From, typename To>
+//        struct is_nothrow_convertible_impl<From, To, false> :
+//                public is_nothrow_convertible_from_to<From,To> {};
     }
 
     template<typename From, typename To>
-    struct is_no_throw_convertible : public impl::is_no_throw_convertible_impl<From, To>::type {};
+    struct is_nothrow_convertible : public impl::is_nothrow_convertible_impl<From, To>::type {};
 
     template<typename From, typename To>
-    [[maybe_unused]] static constexpr auto is_no_throw_convertible_v{is_no_throw_convertible<From, To>::value};
+    [[maybe_unused]] static constexpr auto is_nothrow_convertible_v{is_nothrow_convertible<From, To>::value};
 
     // Alignment of
     template<typename Tp>
@@ -1514,11 +1579,11 @@ namespace bazaar::traits {
         private:
             using Up = remove_reference_t<Tp>;
         public:
-            using type = conditional_t<is_array_v<Tp>,
-                    remove_extent_t<Tp> *,
-                    conditional_t<is_function_v<Tp>,
-                            add_pointer_t<Tp>,
-                            remove_cv_t<Tp>>>;
+            using type = conditional_t<is_array_v<Up>,
+                    remove_extent_t<Up> *,
+                    conditional_t<is_function_v<Up>,
+                            add_pointer_t<Up>,
+                            remove_cv_t<Up>>>;
         };
     }
 

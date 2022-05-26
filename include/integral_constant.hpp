@@ -21,8 +21,10 @@ namespace bazaar::traits
     using true_type = bool_constant<true>;
     using false_type = bool_constant<false>;
 
-    template<typename Tp> struct invert_bool_constant : public bool_constant<!bool(Tp::value)> {};
-
-    template<typename Tp>
-    using invert_bool_constant_t = typename invert_bool_constant<Tp>::type;
+    namespace impl {
+        template<typename Tp>
+        struct invert_bool_constant : public bool_constant<!bool(Tp::value)> {};
+        template<typename Tp>
+        using invert_bool_constant_t = typename invert_bool_constant<Tp>::type;
+    }
 }

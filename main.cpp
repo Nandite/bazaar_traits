@@ -1,3 +1,22 @@
+// Copyright (c) 2022 Papa Libasse Sow.
+// https://github.com/Nandite/Pcl-Optics
+// Distributed under the MIT Software License (X11 license).
+//
+// SPDX-License-Identifier: MIT
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 #include <utility>
 #include <array>
 #include "include/bazaar_traits.hpp"
@@ -8,7 +27,7 @@ struct StructTypeWithEnumMember { enum EnumMember { }; };
 enum EnumType {};
 enum class EnumClassWithSignedUnderlyingType : int {};
 enum class EnumClassWithUnsignedUnderlyingType : unsigned int {};
-struct StructType {};
+struct EmptyStructType {};
 class EmptyClassType {};
 enum class EnumClassType {};
 union UnionTypeWithClassMember { class [[maybe_unused]] UnionClassMemberType {}; };
@@ -38,20 +57,41 @@ public:
     explicit Constructible(EmptyClassType){};
     explicit Constructible(EmptyClassType, Tp, UnionTypeWithClassMember){};
 };
-class ImplicitTriviallyConstructible {};
-class TriviallyConstructible {
+class ImplicitConstructibleClass {};
+class NoThrowConstructible {
 public:
-    TriviallyConstructible() = default;
-    TriviallyConstructible(const TriviallyConstructible &) = default;
-    TriviallyConstructible(TriviallyConstructible&&) = default;
+    explicit NoThrowConstructible (int) noexcept {};
+    explicit NoThrowConstructible(float) noexcept {};
+    NoThrowConstructible(int, std::size_t) noexcept {};
+    explicit NoThrowConstructible(EnumClassType) noexcept {};
+    explicit NoThrowConstructible(EmptyClassType) noexcept {};
+    explicit NoThrowConstructible(EmptyClassType, Tp, UnionTypeWithClassMember) noexcept {};
 };
-class NonTriviallyConstructible {
+class ExplicitDefaultConstructors {
 public:
-    NonTriviallyConstructible() = delete;
-    NonTriviallyConstructible(const NonTriviallyConstructible &) = delete;
-    NonTriviallyConstructible(NonTriviallyConstructible&&) = delete;
+    ExplicitDefaultConstructors() = default;
+    ExplicitDefaultConstructors(const ExplicitDefaultConstructors &) = default;
+    ExplicitDefaultConstructors(ExplicitDefaultConstructors&&) = default;
 };
-class ImplicitCopyConstructibleClass {};
+class DeletedConstructors {
+public:
+    DeletedConstructors() = delete;
+    DeletedConstructors(const DeletedConstructors &) = delete;
+    DeletedConstructors(DeletedConstructors&&) = delete;
+};
+class ExplicitNoThrowConstructors {
+public:
+    ExplicitNoThrowConstructors() noexcept = default;
+    ExplicitNoThrowConstructors(const ExplicitNoThrowConstructors &) noexcept = default;
+    ExplicitNoThrowConstructors(ExplicitNoThrowConstructors&&) noexcept = default;
+};
+class ExplicitThrowConstructors {
+public:
+    ExplicitThrowConstructors() noexcept(false) = default;
+    ExplicitThrowConstructors(const ExplicitThrowConstructors &) noexcept(false) = default;
+    ExplicitThrowConstructors(ExplicitThrowConstructors&&) noexcept(false) = default;
+};
+
 class ExplicitCopyConstructibleClass {
 public:
     ExplicitCopyConstructibleClass(const ExplicitCopyConstructibleClass &)= default;
@@ -119,34 +159,252 @@ public:
 };
 class NonAssignableClass {
 public:
-    NonAssignableClass & operator=(const NonAssignableClass &) = delete;
+    NonAssignableClass& operator=(const NonAssignableClass &) = delete;
     NonAssignableClass& operator=(NonAssignableClass &&) = delete;
     NonAssignableClass& operator=(const int&) = delete;
 };
 class NonTriviallyAssignable {
 public:
-    NonTriviallyAssignable& operator=(const NonTriviallyAssignable&){return *this;};
-    NonTriviallyAssignable& operator=(NonTriviallyAssignable&&){return *this;};
+    NonTriviallyAssignable& operator=(const NonTriviallyAssignable&){
+        int a, b;
+        std::swap(a,b);
+        return *this;
+    };
+    NonTriviallyAssignable& operator=(NonTriviallyAssignable&&) noexcept {
+        int a, b;
+        std::swap(a,b);
+        return *this;
+    };
 };
 class TriviallyAssignable {
 public:
     TriviallyAssignable& operator=(const TriviallyAssignable&) = default;
     TriviallyAssignable& operator=(TriviallyAssignable&&)= default;
 };
-class NonDestructibleClass {
+class NoThrowAssignable {
 public:
-    ~NonDestructibleClass() = delete;
+    NoThrowAssignable& operator=(const NoThrowAssignable&) noexcept = default;
+    NoThrowAssignable& operator=(NoThrowAssignable&&) noexcept = default;
+};
+class ThrowAssignable {
+public:
+    ThrowAssignable& operator=(const ThrowAssignable&) noexcept(false) = default;
+    ThrowAssignable& operator=(ThrowAssignable&&) noexcept(false) = default;
+};
+class NoThrowAssignableAndConstructible {
+public:
+    NoThrowAssignableAndConstructible(NoThrowAssignableAndConstructible&&) noexcept = default;
+    NoThrowAssignableAndConstructible& operator=(const NoThrowAssignableAndConstructible&) noexcept = default;
+    NoThrowAssignableAndConstructible& operator=(NoThrowAssignableAndConstructible&&) noexcept = default;
 };
 class DefaultDestructibleClass {
 public:
     ~DefaultDestructibleClass() = default;
 };
+class NonDestructibleClass {
+public:
+    ~NonDestructibleClass() = delete;
+};
+class ThrowDestructibleClass {
+public:
+    ~ThrowDestructibleClass() noexcept(false) = default;
+};
+class NoThrowDestructibleClass {
+public:
+    ~NoThrowDestructibleClass() noexcept = default;
+};
 class NonTriviallyDestructibleClass {
 public:
     ~NonTriviallyDestructibleClass() = delete;
 };
+class VirtualClass
+{
+public:
+    [[maybe_unused]] virtual void fuzz() {};
+};
+class VirtualPureClass
+{
+    [[maybe_unused]] virtual void fuzz() = 0;
+};
+class DerivedFromVirtualClass : public VirtualClass{};
+class DerivedFromVirtualPureClass : public VirtualPureClass{};
+class VirtualDestructorClass {
+    virtual ~VirtualDestructorClass() = default;
+};
+class ClassWithDifferentAccessControl
+{
+public:
+    [[maybe_unused]] int publicMember{};
+private:
+    [[maybe_unused]] int privateMember{};
+};
+class ClassWithReferenceMemberType
+{
+    explicit ClassWithReferenceMemberType(int & reference) : referenceMember(reference){};
+private:
+    [[maybe_unused]] int & referenceMember;
+};
+struct Q {};
+struct S : Q { };
+struct T : Q { };
+struct HasTwoBaseClassSubObjects : S, T { };
+struct PrivateInheritedBaseClass : private Q{};
+struct ProtectedInheritedBaseClass : protected Q{};
+class finalClass final{};
+class finalStruct final{};
+class PrivateMemberClass{
+private:
+    [[maybe_unused]] int a;
+};
+class ProtectedMemberClass{
+private:
+    [[maybe_unused]] int a;
+};
+class DefaultMemberInitializationClass
+{
+    [[maybe_unused]] int a{};
+    [[maybe_unused]] int b{};
+};
+struct NonUniqueObjectRepresentationStruct
+{
+    [[maybe_unused]] char c;
+    [[maybe_unused]] float f;
+    [[maybe_unused]] short st;
+    [[maybe_unused]] int i;
+};
+
+struct UniqueObjectRepresentationStruct
+{
+    [[maybe_unused]] int a;
+    [[maybe_unused]] int b;
+};
 
 namespace bzt = bazaar::traits;
+
+[[maybe_unused]] void test_identity(){
+    static_assert(std::is_same_v<bzt::identity<int>::type, int>);
+    static_assert(std::is_same_v<bzt::identity<char>::type, char>);
+    static_assert(std::is_same_v<bzt::identity<signed short>::type, signed short>);
+    static_assert(std::is_same_v<bzt::identity<unsigned long>::type, unsigned long>);
+    static_assert(std::is_same_v<bzt::identity<int*>::type, int*>);
+    static_assert(std::is_same_v<bzt::identity<int[5]>::type, int[5]>);
+    static_assert(std::is_same_v<bzt::identity<int[]>::type, int[]>);
+    static_assert(std::is_same_v<bzt::identity<EmptyClassType>::type, EmptyClassType>);
+    static_assert(std::is_same_v<bzt::identity<EmptyStructType>::type, EmptyStructType>);
+    static_assert(std::is_same_v<bzt::identity<EnumWithUnderlyingUChar>::type, EnumWithUnderlyingUChar>);
+    static_assert(std::is_same_v<bzt::identity<EnumWithUnderlyingUShort>::type, EnumWithUnderlyingUShort>);
+    static_assert(std::is_same_v<bzt::identity<EnumWithUnderlyingInt>::type, EnumWithUnderlyingInt>);
+    static_assert(std::is_same_v<bzt::identity<EnumType>::type, EnumType>);
+    static_assert(std::is_same_v<bzt::identity<UnionType>::type, UnionType>);
+}
+
+template<bool, typename = void>
+struct test_enable_if_with_sfinae: public std::false_type{};
+template<bool condition>
+struct test_enable_if_with_sfinae<condition,
+        std::void_t<bzt::enable_if_t<condition, std::nullptr_t>>>:
+        public std::true_type {};
+[[maybe_unused]] void test_enable_if(){
+    static_assert(test_enable_if_with_sfinae<true>::value);
+    static_assert(!test_enable_if_with_sfinae<false>::value);
+}
+
+[[maybe_unused]] void test_conditional(){
+    static_assert(std::is_same_v<bzt::conditional_t<true, int, void>, int>);
+    static_assert(std::is_same_v<bzt::conditional_t<false, int, void>, void>);
+    static_assert(std::is_same_v<bzt::conditional_t<true, std::conditional_t<true, long, short>, void>, long>);
+    static_assert(std::is_same_v<bzt::conditional_t<true, std::conditional_t<false, long,short>, void>, short>);
+}
+
+[[maybe_unused]] void test_is_same(){
+    static_assert(bzt::is_same_v<void, void>);
+    static_assert(bzt::is_same_v<int, int>);
+    static_assert(bzt::is_same_v<int, signed int>);
+    static_assert(!bzt::is_same_v<int, unsigned int>);
+    static_assert(!bzt::is_same_v<int, const int>);
+    static_assert(!bzt::is_same_v<int, volatile int>);
+    static_assert(!bzt::is_same_v<int, const volatile int>);
+    static_assert(bzt::is_same_v<float, float>);
+    static_assert(bzt::is_same_v<double, double>);
+    static_assert(bzt::is_same_v<Tp, Tp>);
+    static_assert(bzt::is_same_v<EmptyClassType, EmptyClassType>);
+    static_assert(bzt::is_same_v<EmptyStructType, EmptyStructType>);
+    static_assert(bzt::is_same_v<UnionType, UnionType>);
+}
+
+[[maybe_unused]] void test_integral_constant() {
+    static_assert(bzt::integral_constant<int, 5>::value == 5);
+    static_assert(bzt::integral_constant<char, 5>::value == 5);
+    static_assert(bzt::integral_constant<int, 55>::value == 55);
+    static_assert(bzt::integral_constant<short, 72>::value == 72);
+    static_assert(bzt::integral_constant<bool, true>::value);
+    static_assert(!bzt::integral_constant<bool, false>::value);
+    static_assert(bzt::bool_constant<true>::value);
+    static_assert(!bzt::bool_constant<false>::value);
+    static_assert(bzt::true_type::value);
+    static_assert(!bzt::false_type::value);
+}
+
+[[maybe_unused]] void test_conjunction() {
+    static_assert(bzt::conjunction_v<bzt::true_type>);
+    static_assert(!bzt::conjunction_v<bzt::false_type>);
+    static_assert(!bzt::conjunction_v<bzt::true_type, bzt::false_type>);
+    static_assert(!bzt::conjunction_v<bzt::false_type , bzt::true_type>);
+    static_assert(bzt::conjunction_v<bzt::true_type,
+            bzt::true_type,
+            bzt::true_type,
+            bzt::true_type,
+            bzt::true_type>);
+    static_assert(!bzt::conjunction_v<bzt::true_type,
+            bzt::true_type,
+            bzt::true_type,
+            bzt::true_type,
+            bzt::false_type>);
+    static_assert(!bzt::conjunction_v<bzt::false_type ,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type>);
+    static_assert(!bzt::conjunction_v<bzt::false_type ,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::true_type>);
+}
+
+[[maybe_unused]] void test_disjunction() {
+    static_assert(bzt::disjunction_v<bzt::true_type>);
+    static_assert(!bzt::disjunction_v<bzt::false_type>);
+    static_assert(!bzt::disjunction_v<bzt::false_type , bzt::false_type>);
+    static_assert(bzt::disjunction_v<bzt::false_type , bzt::true_type>);
+    static_assert(bzt::disjunction_v<bzt::true_type, bzt::false_type>);
+    static_assert(bzt::disjunction_v<bzt::true_type, bzt::true_type>);
+    static_assert(bzt::disjunction_v<bzt::true_type,
+            bzt::true_type,
+            bzt::true_type,
+            bzt::true_type,
+            bzt::true_type>);
+    static_assert(!bzt::disjunction_v<bzt::false_type,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type>);
+    static_assert(bzt::disjunction_v<bzt::true_type,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type,
+            bzt::false_type>);
+    static_assert(bzt::disjunction_v<bzt::false_type,
+            bzt::false_type,
+            bzt::true_type,
+            bzt::false_type,
+            bzt::false_type>);
+}
+
+[[maybe_unused]] void test_negation() {
+    static_assert(!bzt::negation_v<bzt::true_type>);
+    static_assert(bzt::negation_v<bzt::false_type>);
+}
 
 [[maybe_unused]] void test_rank() {
     static_assert(std::rank_v<int> == bzt::rank_v<int>);
@@ -642,7 +900,7 @@ namespace
 
 [[maybe_unused]] void test_is_union() {
 
-    static_assert(!bzt::is_union_v<StructType>);
+    static_assert(!bzt::is_union_v<EmptyStructType>);
     static_assert(bzt::is_union_v<UnionType>);
     static_assert(!bzt::is_union_v<StructWithUnionMemberType>);
     static_assert(!bzt::is_union_v<int>);
@@ -651,7 +909,7 @@ namespace
 [[maybe_unused]] void test_is_class() {
     static_assert(!bzt::is_class_v<UnionTypeWithClassMember>);
     static_assert(bzt::is_class_v<UnionTypeWithClassMember::UnionClassMemberType>);
-    static_assert(bzt::is_class_v<StructType>);
+    static_assert(bzt::is_class_v<EmptyStructType>);
     static_assert(bzt::is_class_v<EmptyClassType>);
     static_assert(!bzt::is_class_v<EmptyClassType*>);
     static_assert(!bzt::is_class_v<EmptyClassType&>);
@@ -748,7 +1006,7 @@ namespace
     static_assert(bzt::is_compound_v<Tp&>);
     static_assert(bzt::is_compound_v<Tp&&>);
     static_assert(bzt::is_compound_v<EmptyClassType>);
-    static_assert(bzt::is_compound_v<StructType>);
+    static_assert(bzt::is_compound_v<EmptyStructType>);
     static_assert(bzt::is_compound_v<EnumType>);
     static_assert(bzt::is_compound_v<StructTypeWithEnumMember::EnumMember>);
 }
@@ -1086,7 +1344,7 @@ namespace
     static_assert(bzt::is_constructible_v<Constructible, EmptyClassType>);
     static_assert(bzt::is_constructible_v<Constructible, EmptyClassType, Tp, UnionTypeWithClassMember>);
     static_assert(!bzt::is_constructible_v<Constructible, double>);
-    static_assert(!bzt::is_constructible_v<Constructible, StructType>);
+    static_assert(!bzt::is_constructible_v<Constructible, EmptyStructType>);
     static_assert(!bzt::is_constructible_v<Constructible, StructTypeWithEnumMember>);
 }
 
@@ -1105,7 +1363,7 @@ namespace
     static_assert(bzt::is_copy_constructible_v<EnumType>);
     static_assert(bzt::is_copy_constructible_v<StructTypeWithEnumMember>);
     static_assert(bzt::is_copy_constructible_v<UnionType>);
-    static_assert(bzt::is_copy_constructible_v<ImplicitCopyConstructibleClass>);
+    static_assert(bzt::is_copy_constructible_v<ImplicitConstructibleClass>);
     static_assert(bzt::is_copy_constructible_v<ExplicitCopyConstructibleClass>);
     static_assert(!bzt::is_copy_constructible_v<NonCopyConstructibleClass>);
     static_assert(bzt::is_copy_constructible_v<ImplicitCopyConstructibleStruct>);
@@ -1242,7 +1500,7 @@ namespace
 
 [[maybe_unused]] void test_is_trivially_default_constructible() {
     static_assert(!bzt::is_trivially_default_constructible_v<Constructible>);
-    static_assert(!bzt::is_trivially_default_constructible_v<NonTriviallyConstructible>);
+    static_assert(!bzt::is_trivially_default_constructible_v<DeletedConstructors>);
     static_assert(bzt::is_trivially_default_constructible_v<unsigned int>);
     static_assert(bzt::is_trivially_default_constructible_v<long>);
     static_assert(bzt::is_trivially_default_constructible_v<EnumClassType>);
@@ -1255,13 +1513,13 @@ namespace
     static_assert(bzt::is_trivially_copy_constructible_v<EnumType>);
     static_assert(bzt::is_trivially_copy_constructible_v<StructTypeWithEnumMember>);
     static_assert(bzt::is_trivially_copy_constructible_v<UnionType>);
-    static_assert(bzt::is_trivially_copy_constructible_v<ImplicitCopyConstructibleClass>);
+    static_assert(bzt::is_trivially_copy_constructible_v<ImplicitConstructibleClass>);
     static_assert(bzt::is_trivially_copy_constructible_v<ExplicitCopyConstructibleClass>);
     static_assert(!bzt::is_trivially_copy_constructible_v<NonCopyConstructibleClass>);
     static_assert(bzt::is_trivially_copy_constructible_v<ImplicitCopyConstructibleStruct>);
     static_assert(bzt::is_trivially_copy_constructible_v<ExplicitCopyConstructibleStruct>);
     static_assert(!bzt::is_trivially_copy_constructible_v<NonCopyConstructibleStruct>);
-    static_assert(!bzt::is_trivially_copy_constructible_v<NonTriviallyConstructible>);
+    static_assert(!bzt::is_trivially_copy_constructible_v<DeletedConstructors>);
 }
 
 [[maybe_unused]] void test_is_trivially_move_constructible() {
@@ -1276,7 +1534,7 @@ namespace
     static_assert(bzt::is_trivially_move_constructible_v<ImplicitMoveConstructibleStruct>);
     static_assert(bzt::is_trivially_move_constructible_v<ExplicitMoveConstructibleStruct>);
     static_assert(!bzt::is_trivially_move_constructible_v<NonMoveConstructibleStruct>);
-    static_assert(!bzt::is_trivially_move_constructible_v<NonTriviallyConstructible>);
+    static_assert(!bzt::is_trivially_move_constructible_v<DeletedConstructors>);
 }
 
 [[maybe_unused]] void test_is_trivially_assignable() {
@@ -1299,20 +1557,14 @@ namespace
 }
 
 [[maybe_unused]] void test_is_trivially_copy_assignable() {
-    static_assert(bzt::is_trivially_copy_constructible_v<int>);
-    static_assert(bzt::is_trivially_copy_constructible_v<long>);
-    static_assert(bzt::is_trivially_copy_constructible_v<EnumType>);
-    static_assert(bzt::is_trivially_copy_constructible_v<StructTypeWithEnumMember>);
-    static_assert(bzt::is_trivially_copy_constructible_v<UnionType>);
-    static_assert(bzt::is_trivially_copy_constructible_v<ImplicitCopyConstructibleClass>);
-    static_assert(bzt::is_trivially_copy_constructible_v<ExplicitCopyConstructibleClass>);
-    static_assert(!bzt::is_trivially_copy_constructible_v<NonCopyConstructibleClass>);
-    static_assert(bzt::is_trivially_copy_constructible_v<ImplicitCopyConstructibleStruct>);
-    static_assert(bzt::is_trivially_copy_constructible_v<ExplicitCopyConstructibleStruct>);
-    static_assert(!bzt::is_trivially_copy_constructible_v<NonCopyConstructibleStruct>);
-    static_assert(!bzt::is_trivially_copy_constructible_v<NonTriviallyConstructible>);
-    static_assert(bzt::is_trivially_copy_constructible_v<TriviallyConstructible>);
-    static_assert(bzt::is_trivially_copy_constructible_v<ImplicitTriviallyConstructible>);
+    static_assert(bzt::is_trivially_copy_assignable_v<int>);
+    static_assert(bzt::is_trivially_copy_assignable_v<long>);
+    static_assert(bzt::is_trivially_copy_assignable_v<EnumType>);
+    static_assert(bzt::is_trivially_copy_assignable_v<StructTypeWithEnumMember>);
+    static_assert(bzt::is_trivially_copy_assignable_v<UnionType>);
+    static_assert(bzt::is_trivially_copy_assignable_v<TriviallyAssignable>);
+    static_assert(!bzt::is_trivially_copy_assignable_v<NonTriviallyAssignable>);
+    static_assert(!bzt::is_trivially_copy_assignable_v<NonAssignableClass>);
 }
 
 [[maybe_unused]] void test_is_trivially_move_assignable() {
@@ -1327,7 +1579,6 @@ namespace
     static_assert(!bzt::is_trivially_move_assignable_v<NonTriviallyAssignable>);
     static_assert(!bzt::is_trivially_move_assignable_v<NonAssignableClass>);
     static_assert(bzt::is_trivially_move_assignable_v<TriviallyAssignable>);
-    static_assert(bzt::is_trivially_move_assignable_v<AssignableFromIntClass>);
 }
 
 [[maybe_unused]] void test_is_trivially_destructible() {
@@ -1360,13 +1611,13 @@ namespace
     static_assert(bzt::is_trivially_copyable_v<EnumType>);
     static_assert(bzt::is_trivially_copyable_v<StructTypeWithEnumMember>);
     static_assert(bzt::is_trivially_copyable_v<UnionType>);
-    static_assert(bzt::is_trivially_copyable_v<ImplicitCopyConstructibleClass>);
+    static_assert(bzt::is_trivially_copyable_v<ImplicitConstructibleClass>);
     static_assert(bzt::is_trivially_copyable_v<ExplicitCopyConstructibleClass>);
     static_assert(bzt::is_trivially_copyable_v<ImplicitCopyConstructibleStruct>);
     static_assert(bzt::is_trivially_copyable_v<ExplicitCopyConstructibleStruct>);
     static_assert(bzt::is_trivially_copyable_v<NonCopyConstructibleClass>);
     static_assert(bzt::is_trivially_copyable_v<NonCopyConstructibleStruct>);
-    static_assert(bzt::is_trivially_copyable_v<NonTriviallyConstructible>);
+    static_assert(bzt::is_trivially_copyable_v<DeletedConstructors>);
     static_assert(!bzt::is_trivially_copyable_v<NonTriviallyCopyableClass_1>);
     static_assert(!bzt::is_trivially_copyable_v<NonTriviallyCopyableClass_2>);
     static_assert(!bzt::is_trivially_copyable_v<NonTriviallyCopyableClass_3>);
@@ -1374,8 +1625,419 @@ namespace
 }
 
 [[maybe_unused]] void test_is_trivial()
-    {
+{
+    static_assert(bzt::is_trivial_v<int>);
+    static_assert(bzt::is_trivial_v<float>);
+    static_assert(bzt::is_trivial_v<char>);
+    static_assert(bzt::is_trivial_v<double>);
+    static_assert(bzt::is_trivial_v<signed long>);
+    static_assert(bzt::is_trivial_v<unsigned short>);
+    static_assert(bzt::is_trivial_v<EmptyClassType>);
+    static_assert(bzt::is_trivial_v<UnionType>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingChar>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingShort>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingInt>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingLong>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingLongLong>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingUChar>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingUShort>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingUInt>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingULong>);
+    static_assert(bzt::is_trivial_v<EnumWithUnderlyingULongLong>);
+    static_assert(bzt::is_trivial_v<DefaultDestructibleClass>);
+    static_assert(bzt::is_trivial_v<EmptyClassType[]>);
+    static_assert(bzt::is_trivial_v<EmptyClassType[55]>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_1>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_2>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_3>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_4>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_1[]>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_2[]>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_3[]>);
+    static_assert(!bzt::is_trivial_v<NonTriviallyCopyableClass_4[]>);
+    static_assert(!bzt::is_trivial_v<const NonTriviallyCopyableClass_1[]>);
+    static_assert(!bzt::is_trivial_v<volatile NonTriviallyCopyableClass_2[]>);
+    static_assert(!bzt::is_trivial_v<const volatile NonTriviallyCopyableClass_3[]>);
+    static_assert(bzt::is_trivial_v<ImplicitConstructibleClass>);
+    static_assert(bzt::is_trivial_v<ExplicitDefaultConstructors>);
+    static_assert(bzt::is_trivial_v<ExplicitDefaultConstructors[]>);
+}
 
-    };
+[[maybe_unused]] void test_is_standard_layout()
+{
+    static_assert(bzt::is_standard_layout_v<int>);
+    static_assert(bzt::is_standard_layout_v<float>);
+    static_assert(bzt::is_standard_layout_v<char>);
+    static_assert(bzt::is_standard_layout_v<double>);
+    static_assert(bzt::is_standard_layout_v<signed long>);
+    static_assert(bzt::is_standard_layout_v<unsigned short>);
+    static_assert(bzt::is_standard_layout_v<EmptyClassType>);
+    static_assert(bzt::is_standard_layout_v<UnionType>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingChar>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingShort>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingInt>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingLong>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingLongLong>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingUChar>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingUShort>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingUInt>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingULong>);
+    static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingULongLong>);
+    static_assert(!bzt::is_standard_layout_v<VirtualClass>);
+    static_assert(!std::is_standard_layout_v<VirtualPureClass>);
+    static_assert(!std::is_standard_layout_v<ClassWithDifferentAccessControl>);
+    static_assert(!std::is_standard_layout_v<ClassWithReferenceMemberType>);
+    static_assert(!std::is_standard_layout_v<HasTwoBaseClassSubObjects>);
+}
+
+[[maybe_unused]] void test_is_empty()
+{
+    static_assert(bzt::is_empty_v<EmptyClassType>);
+    static_assert(bzt::is_empty_v<EmptyStructType>);
+    static_assert(!bzt::is_empty_v<EnumClassType>);
+    static_assert(!bzt::is_empty_v<EnumType>);
+    static_assert(!bzt::is_empty_v<UnionType>);
+    static_assert(!bzt::is_empty_v<VirtualClass>);
+    static_assert(!std::is_empty_v<VirtualPureClass>);
+    static_assert(!std::is_empty_v<ClassWithReferenceMemberType>);
+}
+
+[[maybe_unused]] void test_is_polymorphic()
+{
+    static_assert(bzt::is_polymorphic_v<VirtualClass>);
+    static_assert(std::is_polymorphic_v<VirtualPureClass>);
+    static_assert(bzt::is_polymorphic_v<DerivedFromVirtualClass>);
+    static_assert(bzt::is_polymorphic_v<VirtualDestructorClass>);
+}
+
+[[maybe_unused]] void test_is_abstract()
+{
+    static_assert(!bzt::is_abstract_v<VirtualClass>);
+    static_assert(std::is_abstract_v<VirtualPureClass>);
+    static_assert(!bzt::is_abstract_v<DerivedFromVirtualClass>);
+    static_assert(bzt::is_abstract_v<DerivedFromVirtualPureClass>);
+}
+
+[[maybe_unused]] void test_is_final()
+{
+    static_assert(bzt::is_final_v<finalClass>);
+    static_assert(bzt::is_final_v<finalStruct>);
+    static_assert(!bzt::is_final_v<EmptyClassType>);
+    static_assert(!bzt::is_final_v<EmptyStructType>);
+    static_assert(!bzt::is_abstract_v<DerivedFromVirtualClass>);
+    static_assert(bzt::is_abstract_v<DerivedFromVirtualPureClass>);
+}
+
+[[maybe_unused]] void test_is_aggregate()
+{
+    static_assert(bzt::is_aggregate_v<Tp[]>);
+    static_assert(bzt::is_aggregate_v<EmptyClassType>);
+    static_assert(!bzt::is_aggregate_v<VirtualClass>);
+    static_assert(!bzt::is_aggregate_v<VirtualPureClass>);
+    static_assert(!bzt::is_aggregate_v<DerivedFromVirtualClass>);
+    static_assert(!bzt::is_aggregate_v<DerivedFromVirtualPureClass>);
+    static_assert(!bzt::is_aggregate_v<DefaultMemberInitializationClass>);
+    static_assert(!bzt::is_aggregate_v<PrivateInheritedBaseClass>);
+    static_assert(!bzt::is_aggregate_v<ProtectedInheritedBaseClass>);
+    static_assert(!bzt::is_aggregate_v<ClassWithReferenceMemberType>);
+    static_assert(!bzt::is_aggregate_v<Constructible>);
+    static_assert(!bzt::is_aggregate_v<PrivateMemberClass>);
+    static_assert(!bzt::is_aggregate_v<ProtectedMemberClass>);
+}
+
+[[maybe_unused]] void test_is_nothrow_constructible()
+{
+    static_assert(!bzt::is_nothrow_constructible_v<Constructible, float>);
+    static_assert(!bzt::is_nothrow_constructible_v<Constructible, int, std::size_t>);
+    static_assert(!bzt::is_nothrow_constructible_v<Constructible, EnumClassType>);
+    static_assert(!bzt::is_nothrow_constructible_v<Constructible, EmptyClassType>);
+    static_assert(!bzt::is_nothrow_constructible_v<Constructible, EmptyClassType, Tp, UnionTypeWithClassMember>);
+    static_assert(bzt::is_nothrow_constructible_v<NoThrowConstructible, float>);
+    static_assert(bzt::is_nothrow_constructible_v<NoThrowConstructible, int, std::size_t>);
+    static_assert(bzt::is_nothrow_constructible_v<NoThrowConstructible, EnumClassType>);
+    static_assert(bzt::is_nothrow_constructible_v<NoThrowConstructible, EmptyClassType>);
+    static_assert(bzt::is_nothrow_constructible_v<NoThrowConstructible, EmptyClassType, Tp, UnionTypeWithClassMember>);
+}
+
+[[maybe_unused]] void test_is_nothrow_default_constructible()
+{
+    static_assert(!bzt::is_nothrow_default_constructible_v<Constructible>);
+    static_assert(!bzt::is_nothrow_default_constructible_v<NoThrowConstructible>);
+    static_assert(!bzt::is_nothrow_default_constructible_v<DeletedConstructors>);
+    static_assert(bzt::is_nothrow_default_constructible_v<ExplicitNoThrowConstructors>);
+    static_assert(!bzt::is_nothrow_default_constructible_v<ExplicitThrowConstructors>);
+    static_assert(bzt::is_nothrow_default_constructible_v<unsigned int>);
+    static_assert(bzt::is_nothrow_default_constructible_v<long>);
+    static_assert(bzt::is_nothrow_default_constructible_v<EnumClassType>);
+    static_assert(bzt::is_nothrow_default_constructible_v<EmptyClassType>);
+}
+
+[[maybe_unused]] void test_is_nothrow_copy_constructible()
+{
+    static_assert(bzt::is_nothrow_copy_constructible_v<int>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<long>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<EnumType>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<StructTypeWithEnumMember>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<UnionType>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<ExplicitNoThrowConstructors>);
+    static_assert(!bzt::is_nothrow_copy_constructible_v<ExplicitThrowConstructors>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<ImplicitConstructibleClass>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<ExplicitCopyConstructibleClass>);
+    static_assert(!bzt::is_nothrow_copy_constructible_v<NonCopyConstructibleClass>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<ImplicitCopyConstructibleStruct>);
+    static_assert(bzt::is_nothrow_copy_constructible_v<ExplicitCopyConstructibleStruct>);
+    static_assert(!bzt::is_nothrow_copy_constructible_v<NonCopyConstructibleStruct>);
+    static_assert(!bzt::is_nothrow_copy_constructible_v<DeletedConstructors>);
+}
+
+[[maybe_unused]] void test_is_nothrow_move_constructible()
+{
+    static_assert(bzt::is_nothrow_move_constructible_v<int>);
+    static_assert(bzt::is_nothrow_move_constructible_v<float>);
+    static_assert(bzt::is_nothrow_move_constructible_v<void*>);
+    static_assert(bzt::is_nothrow_move_constructible_v<bzt::nullptr_t>);
+    static_assert(bzt::is_nothrow_move_constructible_v<EnumType>);
+    static_assert(bzt::is_nothrow_move_constructible_v<EnumClassType>);
+    static_assert(bzt::is_nothrow_move_constructible_v<ExplicitDefaultConstructors>);
+    static_assert(!bzt::is_nothrow_move_constructible_v<DeletedConstructors>);
+    static_assert(bzt::is_nothrow_move_constructible_v<ExplicitNoThrowConstructors>);
+    static_assert(!bzt::is_nothrow_move_constructible_v<ExplicitThrowConstructors>);
+    static_assert(!bzt::is_nothrow_move_constructible_v<ExplicitThrowConstructors>);
+}
+
+[[maybe_unused]] void test_is_nothrow_assignable()
+{
+    static_assert(!bzt::is_nothrow_assignable_v<int,int>);
+    static_assert(bzt::is_nothrow_assignable_v<int&,int>);
+    static_assert(!bzt::is_nothrow_assignable_v<int,double>);
+    static_assert(bzt::is_nothrow_assignable_v<AssignableFromIntClass&, AssignableFromIntClass>);
+    static_assert(bzt::is_nothrow_assignable_v<AssignableFromIntClass&, AssignableFromIntClass&&>);
+    static_assert(bzt::is_nothrow_assignable_v<TriviallyAssignable&, TriviallyAssignable>);
+    static_assert(bzt::is_nothrow_assignable_v<TriviallyAssignable&, TriviallyAssignable&&>);
+    static_assert(!bzt::is_nothrow_assignable_v<NonAssignableClass&, NonAssignableClass>);
+    static_assert(!bzt::is_nothrow_assignable_v<NonAssignableClass&, NonAssignableClass&&>);
+    static_assert(!bzt::is_nothrow_assignable_v<NonAssignableClass&, int>);
+    static_assert(!bzt::is_nothrow_assignable_v<NonAssignableClass&, const int>);
+    static_assert(!bzt::is_nothrow_assignable_v<NonAssignableClass&, const int &>);
+    static_assert(bzt::is_nothrow_assignable_v<NoThrowAssignable&, const NoThrowAssignable&>);
+    static_assert(bzt::is_nothrow_assignable_v<NoThrowAssignable&, const NoThrowAssignable>);
+    static_assert(bzt::is_nothrow_assignable_v<NoThrowAssignable&, NoThrowAssignable>);
+    static_assert(!bzt::is_nothrow_assignable_v<ThrowAssignable&, const ThrowAssignable&>);
+    static_assert(!bzt::is_nothrow_assignable_v<ThrowAssignable&, const ThrowAssignable>);
+    static_assert(!bzt::is_nothrow_assignable_v<ThrowAssignable&, ThrowAssignable>);
+}
+
+[[maybe_unused]] void test_is_nothrow_copy_assignable()
+{
+    static_assert(bzt::is_nothrow_copy_assignable_v<int>);
+    static_assert(bzt::is_nothrow_copy_assignable_v<long>);
+    static_assert(bzt::is_nothrow_copy_assignable_v<EnumType>);
+    static_assert(bzt::is_nothrow_copy_assignable_v<StructTypeWithEnumMember>);
+    static_assert(bzt::is_nothrow_copy_assignable_v<UnionType>);
+    static_assert(bzt::is_nothrow_copy_assignable_v<NoThrowAssignable>);
+    static_assert(!bzt::is_nothrow_copy_assignable_v<ThrowAssignable>);
+    static_assert(!bzt::is_nothrow_copy_assignable_v<NonAssignableClass>);
+}
+
+[[maybe_unused]] void test_is_nothrow_move_assignable()
+{
+    static_assert(bzt::is_nothrow_move_assignable_v<AssignableFromIntClass>);
+    static_assert(!bzt::is_nothrow_move_assignable_v<NonAssignableClass>);
+    static_assert(bzt::is_nothrow_move_assignable_v<int>);
+    static_assert(bzt::is_nothrow_move_assignable_v<float>);
+    static_assert(bzt::is_nothrow_move_assignable_v<void*>);
+    static_assert(bzt::is_nothrow_move_assignable_v<bzt::nullptr_t>);
+    static_assert(bzt::is_nothrow_move_assignable_v<EnumType>);
+    static_assert(bzt::is_nothrow_move_assignable_v<EnumClassType>);
+    static_assert(!bzt::is_nothrow_move_assignable_v<ThrowAssignable>);
+    static_assert(bzt::is_nothrow_move_assignable_v<NoThrowAssignable>);
+    static_assert(!bzt::is_nothrow_move_assignable_v<NonAssignableClass>);
+}
+
+[[maybe_unused]] void test_is_nothrow_swappable_with() {
+    static_assert(bzt::is_nothrow_swappable_with_v<int&, int&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<float&, float&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<char&, char&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<double&, double&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<signed long&, signed long&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<unsigned short&, unsigned short&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<Tp&, Tp&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<UnionType&, UnionType&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingChar&, EnumWithUnderlyingChar&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingShort&, EnumWithUnderlyingShort&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingInt&, EnumWithUnderlyingInt&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingLong&, EnumWithUnderlyingLong&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingLongLong&, EnumWithUnderlyingLongLong&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingUChar&, EnumWithUnderlyingUChar&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingUShort&, EnumWithUnderlyingUShort&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingUInt&, EnumWithUnderlyingUInt&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingULong&, EnumWithUnderlyingULong&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<EnumWithUnderlyingULongLong&, EnumWithUnderlyingULongLong&>);
+    static_assert(!bzt::is_nothrow_swappable_with_v<ThrowAssignable&, ThrowAssignable&>);
+    static_assert(!bzt::is_nothrow_swappable_with_v<ExplicitThrowConstructors&, ExplicitThrowConstructors&>);
+    static_assert(!bzt::is_nothrow_swappable_with_v<NoThrowAssignable&, NoThrowAssignable&>);
+    static_assert(bzt::is_nothrow_swappable_with_v<NoThrowAssignableAndConstructible&, NoThrowAssignableAndConstructible&>);
+}
+
+[[maybe_unused]] void test_is_nothrow_swappable() {
+    static_assert(bzt::is_swappable_v<int>);
+    static_assert(bzt::is_swappable_v<float>);
+    static_assert(bzt::is_swappable_v<char>);
+    static_assert(bzt::is_swappable_v<double>);
+    static_assert(bzt::is_swappable_v<signed long>);
+    static_assert(bzt::is_swappable_v<unsigned short>);
+    static_assert(bzt::is_swappable_v<Tp>);
+    static_assert(bzt::is_swappable_v<UnionType>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingChar>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingShort>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingInt>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingLong>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingLongLong>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingUChar>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingUShort>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingUInt>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingULong>);
+    static_assert(bzt::is_swappable_v<EnumWithUnderlyingULongLong>);
+    static_assert(!bzt::is_swappable_v<ThrowAssignable>);
+    static_assert(!bzt::is_swappable_v<ExplicitThrowConstructors>);
+    static_assert(!bzt::is_swappable_v<NoThrowAssignable>);
+    static_assert(bzt::is_swappable_v<NoThrowAssignableAndConstructible>);
+}
+
+[[maybe_unused]] void test_is_nothrow_destructible()
+{
+    static_assert(bzt::is_nothrow_destructible_v<int>);
+    static_assert(bzt::is_nothrow_destructible_v<float>);
+    static_assert(bzt::is_nothrow_destructible_v<char>);
+    static_assert(bzt::is_nothrow_destructible_v<double>);
+    static_assert(bzt::is_nothrow_destructible_v<signed long>);
+    static_assert(bzt::is_nothrow_destructible_v<unsigned short>);
+    static_assert(bzt::is_nothrow_destructible_v<Tp>);
+    static_assert(bzt::is_nothrow_destructible_v<UnionType>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingChar>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingShort>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingInt>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingLong>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingLongLong>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingUChar>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingUShort>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingUInt>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingULong>);
+    static_assert(bzt::is_nothrow_destructible_v<EnumWithUnderlyingULongLong>);
+    static_assert(bzt::is_nothrow_destructible_v<DefaultDestructibleClass>);
+    static_assert(!bzt::is_nothrow_destructible_v<NonDestructibleClass>);
+    static_assert(!bzt::is_nothrow_destructible_v<ThrowDestructibleClass>);
+    static_assert(bzt::is_nothrow_destructible_v<NoThrowDestructibleClass>);
+}
+
+[[maybe_unused]] void test_has_virtual_destructor()
+{
+    static_assert(!bzt::has_virtual_destructor_v<EmptyClassType>);
+    static_assert(!bzt::has_virtual_destructor_v<DefaultDestructibleClass>);
+    static_assert(!bzt::has_virtual_destructor_v<NonDestructibleClass>);
+    static_assert(bzt::has_virtual_destructor_v<VirtualDestructorClass>);
+}
+
+[[maybe_unused]] void test_has_unique_object_representations()
+{
+    static_assert(bzt::has_unique_object_representations_v<char>);
+    static_assert(bzt::has_unique_object_representations_v<unsigned char>);
+    static_assert(bzt::has_unique_object_representations_v<int>);
+    static_assert(bzt::has_unique_object_representations_v<unsigned int>);
+    static_assert(bzt::has_unique_object_representations_v<UniqueObjectRepresentationStruct>);
+    static_assert(!bzt::has_unique_object_representations_v<NonUniqueObjectRepresentationStruct>);
+}
+
+[[maybe_unused]] void test_is_base_of()
+{
+    class A {};
+    class B : A {};
+    class C : B {};
+    class D {};
+    static_assert(bzt::is_base_of_v<A, A>);
+    static_assert(bzt::is_base_of_v<A, B>);
+    static_assert(bzt::is_base_of_v<A, C>);
+    static_assert(!bzt::is_base_of_v<A, D>);
+    static_assert(!bzt::is_base_of_v<B, A>);
+    static_assert(!bzt::is_base_of_v<int, int>);
+}
+
+[[maybe_unused]] void test_is_convertible()
+{
+    class A {};
+    class B : public A {};
+    class C {};
+    class D { public: operator C() const { return c; }  C c; };
+
+    static_assert(bzt::is_convertible_v<B*, A*>);
+    static_assert(!bzt::is_convertible_v<A*, B*>);
+    static_assert(bzt::is_convertible_v<D, C>);
+    static_assert(!bzt::is_convertible_v<B*, C*>);
+}
+
+[[maybe_unused]] void test_is_nothrow_convertible()
+{
+    class A {};
+    class B : public A {};
+    class C {};
+    class D { public: explicit operator C() const noexcept(false) { return c; }  C c; };
+
+    static_assert(bzt::is_nothrow_convertible_v<B*, A*>);
+    static_assert(!bzt::is_nothrow_convertible_v<A*, B*>);
+    static_assert(!bzt::is_nothrow_convertible_v<D, C>);
+    static_assert(!bzt::is_nothrow_convertible_v<B*, C*>);
+}
+
+[[maybe_unused]] void test_alignment_of()
+{
+    static_assert(std::alignment_of_v<char> == bzt::alignment_of_v<char>);
+    static_assert(std::alignment_of_v<short> == bzt::alignment_of_v<short>);
+    static_assert(std::alignment_of_v<int> == bzt::alignment_of_v<int>);
+    static_assert(std::alignment_of_v<long> == bzt::alignment_of_v<long>);
+    static_assert(std::alignment_of_v<long long> == bzt::alignment_of_v<long long>);
+    static_assert(std::alignment_of_v<EmptyClassType> == bzt::alignment_of_v<EmptyClassType>);
+    static_assert(std::alignment_of_v<EmptyStructType> == bzt::alignment_of_v<EmptyStructType>);
+    static_assert(std::alignment_of_v<EnumWithUnderlyingChar> == bzt::alignment_of_v<EnumWithUnderlyingChar>);
+    static_assert(std::alignment_of_v<EnumWithUnderlyingShort> == bzt::alignment_of_v<EnumWithUnderlyingShort>);
+    static_assert(std::alignment_of_v<EnumWithUnderlyingInt> == bzt::alignment_of_v<EnumWithUnderlyingInt>);
+    static_assert(std::alignment_of_v<EnumWithUnderlyingLong> == bzt::alignment_of_v<EnumWithUnderlyingLong>);
+    static_assert(std::alignment_of_v<EnumWithUnderlyingLongLong> == bzt::alignment_of_v<EnumWithUnderlyingLongLong>);
+}
+
+[[maybe_unused]] void test_decay()
+{
+    static_assert(std::is_same_v<int, bzt::decay_t<int>>);
+    static_assert(std::is_same_v<int, bzt::decay_t<int &>>);
+    static_assert(std::is_same_v<int, bzt::decay_t<int &&>>);
+    static_assert(std::is_same_v<int, bzt::decay_t<const int &>>);
+    static_assert(std::is_same_v<int *, bzt::decay_t<int[]>>);
+    static_assert(std::is_same_v<int *, bzt::decay_t<int[2]>>);
+    static_assert(std::is_same_v<int (*)(int), bzt::decay_t<int(int)>>);
+}
+
+[[maybe_unused]] void test_remove_cvref()
+{
+    static_assert(std::is_same_v<int, bzt::remove_cvref_t<int>>);
+    static_assert(std::is_same_v<int, bzt::remove_cvref_t<int&>>);
+    static_assert(std::is_same_v<int, bzt::remove_cvref_t<int&&>>);
+    static_assert(std::is_same_v<int, bzt::remove_cvref_t<const int&>>);
+    static_assert(std::is_same_v<int[2], bzt::remove_cvref_t<const int[2]>>);
+    static_assert(std::is_same_v<int[2], bzt::remove_cvref_t<const int(&)[2]>>);
+    static_assert(std::is_same_v<int(int), bzt::remove_cvref_t<int(int)>>);
+}
+
+[[maybe_unused]] void test_underlying_type()
+{
+    static_assert(std::is_same_v<char, bzt::underlying_type_t<EnumWithUnderlyingChar>>);
+    static_assert(std::is_same_v<short, bzt::underlying_type_t<EnumWithUnderlyingShort>>);
+    static_assert(std::is_same_v<int, bzt::underlying_type_t<EnumWithUnderlyingInt>>);
+    static_assert(std::is_same_v<long, bzt::underlying_type_t<EnumWithUnderlyingLong>>);
+    static_assert(std::is_same_v<long long, bzt::underlying_type_t<EnumWithUnderlyingLongLong>>);
+    static_assert(std::is_same_v<unsigned char, bzt::underlying_type_t<EnumWithUnderlyingUChar>>);
+    static_assert(std::is_same_v<unsigned short, bzt::underlying_type_t<EnumWithUnderlyingUShort>>);
+    static_assert(std::is_same_v<unsigned int, bzt::underlying_type_t<EnumWithUnderlyingUInt>>);
+    static_assert(std::is_same_v<unsigned long, bzt::underlying_type_t<EnumWithUnderlyingULong>>);
+    static_assert(std::is_same_v<unsigned long long, bzt::underlying_type_t<EnumWithUnderlyingULongLong>>);
+}
 
 int main() {return EXIT_SUCCESS;}

@@ -11,11 +11,11 @@ namespace bazaar
     // helper_traits.hpp
     //-------------------------------------------------------------------------------------------
     using nullptr_t;
+    using void_t;
     template<typename Tp> struct identity;
     template <bool, typename Tp = void> struct enable_if;
     template<bool Condition, typename If, typename Else> struct conditional
     template<typename Tp, typename Up> struct is_same;
-    template<typename Tp, typename ... Sequence> struct is_one_of;
 
     //-------------------------------------------------------------------------------------------
     // integral_constant.hpp
@@ -24,7 +24,6 @@ namespace bazaar
     template<bool v> using bool_constant;
     using true_type = bool_constant<true>;
     using false_type = bool_constant<false>;
-    template<typename Tp> struct invert_bool_constant;
 
     //-------------------------------------------------------------------------------------------
     // arithmetic.hpp
@@ -142,7 +141,7 @@ namespace bazaar
     template<typename Tp>                       struct is_nothrow_move_assignable;
     template<typename Tp, typename Up>          struct is_nothrow_swappable_with;
     template<typename Tp>                       struct is_nothrow_swappable;
-    template<typename Tp>                       struct is_no_throw_destructible;
+    template<typename Tp>                       struct is_nothrow_destructible;
 
     template<typename Tp>                       struct has_virtual_destructor;
     template<typename Tp>                       struct has_unique_object_representations;
@@ -150,7 +149,7 @@ namespace bazaar
     // Relationships between types:
     template<typename Base, typename Derived>   struct is_base_of;
     template<typename From, typename To>        struct is_convertible;
-    template<typename From, typename To>        struct is_no_throw_convertible
+    template<typename From, typename To>        struct is_nothrow_convertible
 
     // Alignment properties and transformations:
     template<typename Tp> struct alignment_of;

@@ -75,7 +75,7 @@ namespace bazaar::traits
     inline constexpr bool is_same_v = is_same<Tp, Up>::value;
 
     template<typename Tp, typename Up>
-    inline constexpr bool is_not_same_v = is_not_same<Tp, Up>::value;
+    [[maybe_unused]] inline constexpr bool is_not_same_v = is_not_same<Tp, Up>::value;
 
     // Is one of
     namespace impl
@@ -85,25 +85,25 @@ namespace bazaar::traits
         template<typename Tp, typename ... Sequence> struct is_one_of_impl<Tp, Tp, Sequence...> :  public true_type {};
         template<typename Tp, typename Up, typename ... Sequence>
         struct is_one_of_impl<Tp, Up, Sequence...> : public is_one_of_impl<Tp, Sequence...>{};
+
+        template<typename Tp, typename ... Sequence>
+        struct is_one_of : public impl::is_one_of_impl<Tp, Sequence...> {};
+
+        template<typename Tp, typename ... Sequence>
+        [[maybe_unused]] static constexpr auto is_one_of_v {is_one_of<Tp, Sequence...>::value};
+
+        template<typename ... Sequence>
+        using is_true_one_of [[maybe_unused]] = is_one_of<true_type, Sequence...>;
+
+        template<typename ... Sequence>
+        using is_false_one_of [[maybe_unused]] = is_one_of<false_type, Sequence...>;
+
+        template<typename ... Sequence>
+        [[maybe_unused]] static constexpr auto is_true_one_of_v {is_one_of<true_type, Sequence...>::value};
+
+        template<typename ... Sequence>
+        [[maybe_unused]] static constexpr auto is_false_one_of_v {is_one_of<false_type, Sequence...>::value};
     }
-
-    template<typename Tp, typename ... Sequence>
-    struct is_one_of : public impl::is_one_of_impl<Tp, Sequence...> {};
-
-    template<typename Tp, typename ... Sequence>
-    [[maybe_unused]] static constexpr auto is_one_of_v {is_one_of<Tp, Sequence...>::value};
-
-    template<typename ... Sequence>
-    using is_true_one_of [[maybe_unused]] = is_one_of<true_type, Sequence...>;
-
-    template<typename ... Sequence>
-    using is_false_one_of [[maybe_unused]] = is_one_of<false_type, Sequence...>;
-
-    template<typename ... Sequence>
-    [[maybe_unused]] static constexpr auto is_true_one_of_v {is_one_of<true_type, Sequence...>::value};
-
-    template<typename ... Sequence>
-    [[maybe_unused]] static constexpr auto is_false_one_of_v {is_one_of<false_type, Sequence...>::value};
 }
 
 #endif //HELPER_TRAITS_HPP

@@ -54,14 +54,8 @@ namespace bazaar::traits
     [[maybe_unused]] inline constexpr auto disjunction_v {disjunction<Bn...>::value};
 
     // Negation
-    namespace impl
-    {
-        template<typename B>
-        struct negation_impl : public invert_bool_constant_t<B> {};
-    }
-
     template<typename B>
-    struct negation : public impl::negation_impl<B>{};
+    struct negation : public impl::invert_bool_constant_t<B>{};
 
     template<typename B>
     [[maybe_unused]] inline constexpr auto negation_v {negation<B>::value};
