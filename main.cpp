@@ -1,5 +1,5 @@
 // Copyright (c) 2022 Papa Libasse Sow.
-// https://github.com/Nandite/Pcl-Optics
+// https://github.com/Nandite/bazaar_traits
 // Distributed under the MIT Software License (X11 license).
 //
 // SPDX-License-Identifier: MIT
