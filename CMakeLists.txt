@@ -3,4 +3,4 @@ project(bazaar_traits)
 
 set(CMAKE_CXX_STANDARD 20)
 include_directories(include)
-add_executable(Bazaar main.cpp include)
+add_executable(Bazaar test.cc include)
