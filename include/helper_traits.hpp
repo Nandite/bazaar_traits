@@ -84,7 +84,7 @@ namespace bazaar::traits
     struct is_same : public impl::is_same_impl<Tp,Up> {};
 
     template<typename Tp, typename Up>
-    using is_not_same = invert_bool_constant_t<typename impl::is_same_impl<Tp,Up>::type>;
+    using is_not_same = impl::invert_bool_constant_t<typename impl::is_same_impl<Tp,Up>::type>;
 
     template<typename Tp, typename Up>
     inline constexpr bool is_same_v = is_same<Tp, Up>::value;
