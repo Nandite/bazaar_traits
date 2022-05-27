@@ -281,41 +281,6 @@ struct UniqueObjectRepresentationStruct
 
 namespace bzt = bazaar::traits;
 
-[[maybe_unused]] void test_identity(){
-    static_assert(std::is_same_v<bzt::identity<int>::type, int>);
-    static_assert(std::is_same_v<bzt::identity<char>::type, char>);
-    static_assert(std::is_same_v<bzt::identity<signed short>::type, signed short>);
-    static_assert(std::is_same_v<bzt::identity<unsigned long>::type, unsigned long>);
-    static_assert(std::is_same_v<bzt::identity<int*>::type, int*>);
-    static_assert(std::is_same_v<bzt::identity<int[5]>::type, int[5]>);
-    static_assert(std::is_same_v<bzt::identity<int[]>::type, int[]>);
-    static_assert(std::is_same_v<bzt::identity<EmptyClassType>::type, EmptyClassType>);
-    static_assert(std::is_same_v<bzt::identity<EmptyStructType>::type, EmptyStructType>);
-    static_assert(std::is_same_v<bzt::identity<EnumWithUnderlyingUChar>::type, EnumWithUnderlyingUChar>);
-    static_assert(std::is_same_v<bzt::identity<EnumWithUnderlyingUShort>::type, EnumWithUnderlyingUShort>);
-    static_assert(std::is_same_v<bzt::identity<EnumWithUnderlyingInt>::type, EnumWithUnderlyingInt>);
-    static_assert(std::is_same_v<bzt::identity<EnumType>::type, EnumType>);
-    static_assert(std::is_same_v<bzt::identity<UnionType>::type, UnionType>);
-}
-
-template<bool, typename = void>
-struct test_enable_if_with_sfinae: public std::false_type{};
-template<bool condition>
-struct test_enable_if_with_sfinae<condition,
-        std::void_t<bzt::enable_if_t<condition, std::nullptr_t>>>:
-        public std::true_type {};
-[[maybe_unused]] void test_enable_if(){
-    static_assert(test_enable_if_with_sfinae<true>::value);
-    static_assert(!test_enable_if_with_sfinae<false>::value);
-}
-
-[[maybe_unused]] void test_conditional(){
-    static_assert(std::is_same_v<bzt::conditional_t<true, int, void>, int>);
-    static_assert(std::is_same_v<bzt::conditional_t<false, int, void>, void>);
-    static_assert(std::is_same_v<bzt::conditional_t<true, std::conditional_t<true, long, short>, void>, long>);
-    static_assert(std::is_same_v<bzt::conditional_t<true, std::conditional_t<false, long,short>, void>, short>);
-}
-
 [[maybe_unused]] void test_is_same(){
     static_assert(bzt::is_same_v<void, void>);
     static_assert(bzt::is_same_v<int, int>);
@@ -330,6 +295,41 @@ struct test_enable_if_with_sfinae<condition,
     static_assert(bzt::is_same_v<EmptyClassType, EmptyClassType>);
     static_assert(bzt::is_same_v<EmptyStructType, EmptyStructType>);
     static_assert(bzt::is_same_v<UnionType, UnionType>);
+}
+
+[[maybe_unused]] void test_identity(){
+    static_assert(bzt::is_same_v<bzt::identity<int>::type, int>);
+    static_assert(bzt::is_same_v<bzt::identity<char>::type, char>);
+    static_assert(bzt::is_same_v<bzt::identity<signed short>::type, signed short>);
+    static_assert(bzt::is_same_v<bzt::identity<unsigned long>::type, unsigned long>);
+    static_assert(bzt::is_same_v<bzt::identity<int*>::type, int*>);
+    static_assert(bzt::is_same_v<bzt::identity<int[5]>::type, int[5]>);
+    static_assert(bzt::is_same_v<bzt::identity<int[]>::type, int[]>);
+    static_assert(bzt::is_same_v<bzt::identity<EmptyClassType>::type, EmptyClassType>);
+    static_assert(bzt::is_same_v<bzt::identity<EmptyStructType>::type, EmptyStructType>);
+    static_assert(bzt::is_same_v<bzt::identity<EnumWithUnderlyingUChar>::type, EnumWithUnderlyingUChar>);
+    static_assert(bzt::is_same_v<bzt::identity<EnumWithUnderlyingUShort>::type, EnumWithUnderlyingUShort>);
+    static_assert(bzt::is_same_v<bzt::identity<EnumWithUnderlyingInt>::type, EnumWithUnderlyingInt>);
+    static_assert(bzt::is_same_v<bzt::identity<EnumType>::type, EnumType>);
+    static_assert(bzt::is_same_v<bzt::identity<UnionType>::type, UnionType>);
+}
+
+template<bool, typename = void>
+struct test_enable_if_with_sfinae: public std::false_type{};
+template<bool condition>
+struct test_enable_if_with_sfinae<condition,
+        std::void_t<bzt::enable_if_t<condition, std::nullptr_t>>>:
+        public std::true_type {};
+[[maybe_unused]] void test_enable_if(){
+    static_assert(test_enable_if_with_sfinae<true>::value);
+    static_assert(!test_enable_if_with_sfinae<false>::value);
+}
+
+[[maybe_unused]] void test_conditional(){
+    static_assert(bzt::is_same_v<bzt::conditional_t<true, int, void>, int>);
+    static_assert(bzt::is_same_v<bzt::conditional_t<false, int, void>, void>);
+    static_assert(bzt::is_same_v<bzt::conditional_t<true, std::conditional_t<true, long, short>, void>, long>);
+    static_assert(bzt::is_same_v<bzt::conditional_t<true, std::conditional_t<false, long,short>, void>, short>);
 }
 
 [[maybe_unused]] void test_integral_constant() {
@@ -414,7 +414,7 @@ struct test_enable_if_with_sfinae<condition,
 
     [[maybe_unused]] int ary[][3]={};
     static_assert(std::rank_v<decltype(ary[0])> == bzt::rank_v<decltype(ary[0])>);
-    static_assert(std::is_same_v<decltype(ary[0]), int(&)[3]>);
+    static_assert(bzt::is_same_v<decltype(ary[0]), int(&)[3]>);
     static_assert(std::rank_v<std::remove_cvref_t<decltype(ary[0])>>
             == bzt::rank_v<bzt::remove_cvref_t<decltype(ary[0])>>);
 }
@@ -436,25 +436,25 @@ struct test_enable_if_with_sfinae<condition,
 }
 
 [[maybe_unused]] void test_remove_extent() {
-    static_assert(std::is_same_v<std::remove_extent_t<int>, bzt::remove_extent_t<int>>);
-    static_assert(std::is_same_v<std::remove_extent_t<int[2]>, bzt::remove_extent_t<int[2]>>);
-    static_assert(std::is_same_v<std::remove_extent_t<Tp>, bzt::remove_extent_t<Tp>>);
-    static_assert(std::is_same_v<std::remove_extent_t<Tp[2][4]>, bzt::remove_extent_t<Tp[2][4]>>);
-    static_assert(std::is_same_v<std::remove_extent_t<int[]>, bzt::remove_extent_t<int[]>>);
-    static_assert(std::is_same_v<std::remove_extent_t<int[2][10]>, bzt::remove_extent_t<int[2][10]>>);
-    static_assert(std::is_same_v<std::remove_extent_t<int[][6]>, bzt::remove_extent_t<int[][6]>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<int>, bzt::remove_extent_t<int>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<int[2]>, bzt::remove_extent_t<int[2]>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<Tp>, bzt::remove_extent_t<Tp>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<Tp[2][4]>, bzt::remove_extent_t<Tp[2][4]>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<int[]>, bzt::remove_extent_t<int[]>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<int[2][10]>, bzt::remove_extent_t<int[2][10]>>);
+    static_assert(bzt::is_same_v<std::remove_extent_t<int[][6]>, bzt::remove_extent_t<int[][6]>>);
 }
 
 [[maybe_unused]] void test_all_remove_extents() {
-    static_assert(std::is_same_v<std::remove_all_extents_t<float>, bzt::remove_all_extents_t<float>>);
-    static_assert(std::is_same_v<std::remove_all_extents_t<float[1][2][3]>, bzt::remove_all_extents_t<float[1][2][3]>>);
-    static_assert(std::is_same_v<std::remove_all_extents_t<float [1][1][1][1][2]>,
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<float>, bzt::remove_all_extents_t<float>>);
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<float[1][2][3]>, bzt::remove_all_extents_t<float[1][2][3]>>);
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<float [1][1][1][1][2]>,
             bzt::remove_all_extents_t<float [1][1][1][1][2]>>);
-    static_assert(std::is_same_v<std::remove_all_extents_t<float*>, bzt::remove_all_extents_t<float*>>);
-    static_assert(std::is_same_v<std::remove_all_extents_t<int[3][2]>, bzt::remove_all_extents_t<int[3][2]>>);
-    static_assert(std::is_same_v<std::remove_all_extents_t<double[2][3]>, bzt::remove_all_extents_t<double[2][3]>>);
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<float*>, bzt::remove_all_extents_t<float*>>);
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<int[3][2]>, bzt::remove_all_extents_t<int[3][2]>>);
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<double[2][3]>, bzt::remove_all_extents_t<double[2][3]>>);
     struct X { int m; };
-    static_assert(std::is_same_v<std::remove_all_extents_t<X[3][3]>, bzt::remove_all_extents_t<X[3][3]>>);
+    static_assert(bzt::is_same_v<std::remove_all_extents_t<X[3][3]>, bzt::remove_all_extents_t<X[3][3]>>);
 }
 
 [[maybe_unused]] void test_is_bounded_array() {
@@ -478,25 +478,25 @@ struct test_enable_if_with_sfinae<condition,
 }
 
 [[maybe_unused]] void test_remove_reference() {
-    static_assert(std::is_same_v<int, bzt::remove_reference_t<int>>);
-    static_assert(std::is_same_v<int, bzt::remove_reference_t<int&>>);
-    static_assert(std::is_same_v<int, bzt::remove_reference_t<int&&>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_reference_t<int>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_reference_t<int&>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_reference_t<int&&>>);
 
-    static_assert(std::is_same_v<const int, bzt::remove_reference_t<const int>>);
-    static_assert(std::is_same_v<const int, bzt::remove_reference_t<const int&>>);
-    static_assert(std::is_same_v<const int, bzt::remove_reference_t<const int&&>>);
+    static_assert(bzt::is_same_v<const int, bzt::remove_reference_t<const int>>);
+    static_assert(bzt::is_same_v<const int, bzt::remove_reference_t<const int&>>);
+    static_assert(bzt::is_same_v<const int, bzt::remove_reference_t<const int&&>>);
 
-    static_assert(std::is_same_v<volatile int, bzt::remove_reference_t<volatile int>>);
-    static_assert(std::is_same_v<volatile int, bzt::remove_reference_t<volatile int&>>);
-    static_assert(std::is_same_v<volatile int, bzt::remove_reference_t<volatile int&&>>);
+    static_assert(bzt::is_same_v<volatile int, bzt::remove_reference_t<volatile int>>);
+    static_assert(bzt::is_same_v<volatile int, bzt::remove_reference_t<volatile int&>>);
+    static_assert(bzt::is_same_v<volatile int, bzt::remove_reference_t<volatile int&&>>);
 
-    static_assert(std::is_same_v<const volatile int, bzt::remove_reference_t<const volatile int>>);
-    static_assert(std::is_same_v<const volatile int, bzt::remove_reference_t<const volatile int&>>);
-    static_assert(std::is_same_v<const volatile int, bzt::remove_reference_t<const volatile int&&>>);
+    static_assert(bzt::is_same_v<const volatile int, bzt::remove_reference_t<const volatile int>>);
+    static_assert(bzt::is_same_v<const volatile int, bzt::remove_reference_t<const volatile int&>>);
+    static_assert(bzt::is_same_v<const volatile int, bzt::remove_reference_t<const volatile int&&>>);
 
-    static_assert(std::is_same_v<int*, bzt::remove_reference_t<int*>>);
-    static_assert(std::is_same_v<int**, bzt::remove_reference_t<int**>>);
-    static_assert(std::is_same_v<int[], bzt::remove_reference_t<int[]>>);
+    static_assert(bzt::is_same_v<int*, bzt::remove_reference_t<int*>>);
+    static_assert(bzt::is_same_v<int**, bzt::remove_reference_t<int**>>);
+    static_assert(bzt::is_same_v<int[], bzt::remove_reference_t<int[]>>);
 }
 
 [[maybe_unused]] void test_add_lvalue_or_rvalue_reference() {
@@ -533,12 +533,12 @@ struct test_enable_if_with_sfinae<condition,
 }
 
 [[maybe_unused]] void test_remove_const_volatile_and_cv() {
-    static_assert(std::is_same_v<bzt::remove_cv_t<int>, int>);
-    static_assert(std::is_same_v<bzt::remove_cv_t<volatile int >, int >);
-    static_assert(std::is_same_v<bzt::remove_cv_t<const volatile int >, int>);
-    static_assert(std::is_same_v<bzt::remove_cv_t<const volatile int* >, const volatile int* >);
-    static_assert(std::is_same_v<bzt::remove_cv_t<const int* volatile >, const int* >);
-    static_assert(std::is_same_v<bzt::remove_cv_t< int* const volatile >, int* >);
+    static_assert(bzt::is_same_v<bzt::remove_cv_t<int>, int>);
+    static_assert(bzt::is_same_v<bzt::remove_cv_t<volatile int >, int >);
+    static_assert(bzt::is_same_v<bzt::remove_cv_t<const volatile int >, int>);
+    static_assert(bzt::is_same_v<bzt::remove_cv_t<const volatile int* >, const volatile int* >);
+    static_assert(bzt::is_same_v<bzt::remove_cv_t<const int* volatile >, const int* >);
+    static_assert(bzt::is_same_v<bzt::remove_cv_t< int* const volatile >, int* >);
 
     using type1 = bzt::remove_cv<const int>::type;
     using type2 = bzt::remove_cv<volatile int>::type;
@@ -546,38 +546,38 @@ struct test_enable_if_with_sfinae<condition,
     using type4 = bzt::remove_cv<const volatile int*>::type;
     using type5 = bzt::remove_cv<int* const volatile>::type;
 
-    static_assert(std::is_same_v<type1, int>);
-    static_assert(std::is_same_v<type2, int>);
-    static_assert(std::is_same_v<type3, int>);
-    static_assert(!std::is_same_v<type4, int*>);
-    static_assert(std::is_same_v<type4, const volatile int*>);
-    static_assert(std::is_same_v<type5, int*>);
+    static_assert(bzt::is_same_v<type1, int>);
+    static_assert(bzt::is_same_v<type2, int>);
+    static_assert(bzt::is_same_v<type3, int>);
+    static_assert(!bzt::is_same_v<type4, int*>);
+    static_assert(bzt::is_same_v<type4, const volatile int*>);
+    static_assert(bzt::is_same_v<type5, int*>);
 }
 
 [[maybe_unused]] void test_add_const_volatile_and_cv() {
-    static_assert(std::is_same_v<bzt::add_const_t<int>, const int>);
-    static_assert(std::is_same_v<bzt::add_const_t<const int>, const int>);
-    static_assert(std::is_same_v<bzt::add_const_t<Tp>, const Tp>);
-    static_assert(std::is_same_v<bzt::add_const_t<int *>, int * const>);
-    static_assert(std::is_same_v<bzt::add_const_t<int[]>, const int[]>);
-    static_assert(std::is_same_v<bzt::add_const_t<int&>, int &>);
-    static_assert(std::is_same_v<bzt::add_const_t<int**>, int** const>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<int>, const int>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<const int>, const int>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<Tp>, const Tp>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<int *>, int * const>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<int[]>, const int[]>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<int&>, int &>);
+    static_assert(bzt::is_same_v<bzt::add_const_t<int**>, int** const>);
 
-    static_assert(std::is_same_v<bzt::add_volatile_t<int>, volatile int>);
-    static_assert(std::is_same_v<bzt::add_volatile_t<volatile int>, volatile  int>);
-    static_assert(std::is_same_v<bzt::add_volatile_t<Tp>, volatile Tp>);
-    static_assert(std::is_same_v<bzt::add_volatile_t<int *>, int * volatile>);
-    static_assert(std::is_same_v<bzt::add_volatile_t<int[]>, volatile int[]>);
-    static_assert(std::is_same_v<bzt::add_volatile_t<int&>, int &>);
-    static_assert(std::is_same_v<bzt::add_volatile_t<int**>, int** volatile>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<int>, volatile int>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<volatile int>, volatile  int>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<Tp>, volatile Tp>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<int *>, int * volatile>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<int[]>, volatile int[]>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<int&>, int &>);
+    static_assert(bzt::is_same_v<bzt::add_volatile_t<int**>, int** volatile>);
 
-    static_assert(std::is_same_v<bzt::add_cv_t<int>, const volatile int>);
-    static_assert(std::is_same_v<bzt::add_cv_t<Tp>, const volatile Tp>);
-    static_assert(std::is_same_v<bzt::add_cv_t<int *>, int * const volatile>);
-    static_assert(std::is_same_v<bzt::add_cv_t<int[]>, const volatile int[]>);
-    static_assert(std::is_same_v<bzt::add_cv_t<int&>, int &>);
-    static_assert(std::is_same_v<bzt::add_cv_t<int**>, int** const volatile>);
-    static_assert(std::is_same_v<bzt::add_cv_t<int**>, int** volatile const >);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<int>, const volatile int>);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<Tp>, const volatile Tp>);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<int *>, int * const volatile>);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<int[]>, const volatile int[]>);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<int&>, int &>);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<int**>, int** const volatile>);
+    static_assert(bzt::is_same_v<bzt::add_cv_t<int**>, int** volatile const >);
 }
 
 [[maybe_unused]] void test_is_void() {
@@ -1012,46 +1012,46 @@ namespace
 }
 
 [[maybe_unused]] void test_is_remove_pointer() {
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int*>>);
-    static_assert(std::is_same_v<int*, bzt::remove_pointer_t<int**>>);
-    static_assert(std::is_same_v<int**, bzt::remove_pointer_t<int***>>);
-    static_assert(std::is_same_v<int***, bzt::remove_pointer_t<int****>>);
-    static_assert(std::is_same_v<int****, bzt::remove_pointer_t<int*****>>);
-    static_assert(std::is_same_v<const int, bzt::remove_pointer_t<const int*>>);
-    static_assert(std::is_same_v<const int*, bzt::remove_pointer_t<const int**>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int* const >>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int* volatile>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int* const volatile>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int* const >>);
-    static_assert(std::is_same_v<int*, bzt::remove_pointer_t<int** const >>);
-    static_assert(std::is_same_v<int**, bzt::remove_pointer_t<int*** const >>);
-    static_assert(std::is_same_v<int***, bzt::remove_pointer_t<int**** const >>);
-    static_assert(std::is_same_v<int****, bzt::remove_pointer_t<int***** const >>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int* volatile>>);
-    static_assert(std::is_same_v<int*, bzt::remove_pointer_t<int** volatile>>);
-    static_assert(std::is_same_v<int**, bzt::remove_pointer_t<int*** volatile>>);
-    static_assert(std::is_same_v<int***, bzt::remove_pointer_t<int**** volatile>>);
-    static_assert(std::is_same_v<int****, bzt::remove_pointer_t<int***** volatile>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<int* const volatile>>);
-    static_assert(std::is_same_v<int*, bzt::remove_pointer_t<int** const volatile>>);
-    static_assert(std::is_same_v<int**, bzt::remove_pointer_t<int*** const volatile>>);
-    static_assert(std::is_same_v<int***, bzt::remove_pointer_t<int**** const volatile>>);
-    static_assert(std::is_same_v<int****, bzt::remove_pointer_t<int***** const volatile>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int*>>);
+    static_assert(bzt::is_same_v<int*, bzt::remove_pointer_t<int**>>);
+    static_assert(bzt::is_same_v<int**, bzt::remove_pointer_t<int***>>);
+    static_assert(bzt::is_same_v<int***, bzt::remove_pointer_t<int****>>);
+    static_assert(bzt::is_same_v<int****, bzt::remove_pointer_t<int*****>>);
+    static_assert(bzt::is_same_v<const int, bzt::remove_pointer_t<const int*>>);
+    static_assert(bzt::is_same_v<const int*, bzt::remove_pointer_t<const int**>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int* const >>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int* volatile>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int* const volatile>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int* const >>);
+    static_assert(bzt::is_same_v<int*, bzt::remove_pointer_t<int** const >>);
+    static_assert(bzt::is_same_v<int**, bzt::remove_pointer_t<int*** const >>);
+    static_assert(bzt::is_same_v<int***, bzt::remove_pointer_t<int**** const >>);
+    static_assert(bzt::is_same_v<int****, bzt::remove_pointer_t<int***** const >>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int* volatile>>);
+    static_assert(bzt::is_same_v<int*, bzt::remove_pointer_t<int** volatile>>);
+    static_assert(bzt::is_same_v<int**, bzt::remove_pointer_t<int*** volatile>>);
+    static_assert(bzt::is_same_v<int***, bzt::remove_pointer_t<int**** volatile>>);
+    static_assert(bzt::is_same_v<int****, bzt::remove_pointer_t<int***** volatile>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<int* const volatile>>);
+    static_assert(bzt::is_same_v<int*, bzt::remove_pointer_t<int** const volatile>>);
+    static_assert(bzt::is_same_v<int**, bzt::remove_pointer_t<int*** const volatile>>);
+    static_assert(bzt::is_same_v<int***, bzt::remove_pointer_t<int**** const volatile>>);
+    static_assert(bzt::is_same_v<int****, bzt::remove_pointer_t<int***** const volatile>>);
 }
 
 [[maybe_unused]] void test_is_add_pointer() {
-    static_assert(std::is_same_v<int*, bzt::add_pointer_t<int>>);
-    static_assert(std::is_same_v<int*, bzt::add_pointer_t<int&>>);
-    static_assert(std::is_same_v<int*, bzt::add_pointer_t<int&&>>);
-    static_assert(std::is_same_v<void*, bzt::add_pointer_t<void>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<bzt::add_pointer_t<int>>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<bzt::add_pointer_t<int&>>>);
-    static_assert(std::is_same_v<int, bzt::remove_pointer_t<bzt::add_pointer_t<int&&>>>);
-    static_assert(std::is_same_v<void, bzt::remove_pointer_t<bzt::add_pointer_t<void>>>);
-    static_assert(std::is_same_v<Tp*, bzt::add_pointer_t<Tp>>);
-    static_assert(std::is_same_v<const int*, bzt::add_pointer_t<const int>>);
-    static_assert(std::is_same_v<volatile int*, bzt::add_pointer_t<volatile int>>);
-    static_assert(std::is_same_v<const volatile int*, bzt::add_pointer_t<const volatile int>>);
+    static_assert(bzt::is_same_v<int*, bzt::add_pointer_t<int>>);
+    static_assert(bzt::is_same_v<int*, bzt::add_pointer_t<int&>>);
+    static_assert(bzt::is_same_v<int*, bzt::add_pointer_t<int&&>>);
+    static_assert(bzt::is_same_v<void*, bzt::add_pointer_t<void>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<bzt::add_pointer_t<int>>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<bzt::add_pointer_t<int&>>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_pointer_t<bzt::add_pointer_t<int&&>>>);
+    static_assert(bzt::is_same_v<void, bzt::remove_pointer_t<bzt::add_pointer_t<void>>>);
+    static_assert(bzt::is_same_v<Tp*, bzt::add_pointer_t<Tp>>);
+    static_assert(bzt::is_same_v<const int*, bzt::add_pointer_t<const int>>);
+    static_assert(bzt::is_same_v<volatile int*, bzt::add_pointer_t<volatile int>>);
+    static_assert(bzt::is_same_v<const volatile int*, bzt::add_pointer_t<const volatile int>>);
 }
 
 [[maybe_unused]] void test_is_signed() {
@@ -1081,107 +1081,107 @@ namespace
 }
 
 [[maybe_unused]] void test_make_signed() {
-    static_assert(std::is_same_v<signed char, std::make_signed_t<signed char>>);
-    static_assert(std::is_same_v<signed char, bzt::make_signed_t<unsigned char>>);
-    static_assert(std::is_same_v<signed short, bzt::make_signed_t<signed short>>);
-    static_assert(std::is_same_v<signed short, bzt::make_signed_t<unsigned short>>);
-    static_assert(std::is_same_v<signed int, bzt::make_signed_t<signed int>>);
-    static_assert(std::is_same_v<signed int, bzt::make_signed_t<unsigned int>>);
-    static_assert(std::is_same_v<signed long, bzt::make_signed_t<signed long>>);
-    static_assert(std::is_same_v<signed long, bzt::make_signed_t<unsigned long>>);
-    static_assert(std::is_same_v<signed long long, bzt::make_signed_t<signed long long>>);
-    static_assert(std::is_same_v<signed long long, bzt::make_signed_t<unsigned long long>>);
+    static_assert(bzt::is_same_v<signed char, std::make_signed_t<signed char>>);
+    static_assert(bzt::is_same_v<signed char, bzt::make_signed_t<unsigned char>>);
+    static_assert(bzt::is_same_v<signed short, bzt::make_signed_t<signed short>>);
+    static_assert(bzt::is_same_v<signed short, bzt::make_signed_t<unsigned short>>);
+    static_assert(bzt::is_same_v<signed int, bzt::make_signed_t<signed int>>);
+    static_assert(bzt::is_same_v<signed int, bzt::make_signed_t<unsigned int>>);
+    static_assert(bzt::is_same_v<signed long, bzt::make_signed_t<signed long>>);
+    static_assert(bzt::is_same_v<signed long, bzt::make_signed_t<unsigned long>>);
+    static_assert(bzt::is_same_v<signed long long, bzt::make_signed_t<signed long long>>);
+    static_assert(bzt::is_same_v<signed long long, bzt::make_signed_t<unsigned long long>>);
 
-    static_assert(std::is_same_v<const signed char, bzt::make_signed_t<const signed char>>);
-    static_assert(std::is_same_v<const signed char, bzt::make_signed_t<const unsigned char>>);
-    static_assert(std::is_same_v<const signed short, bzt::make_signed_t<const signed short>>);
-    static_assert(std::is_same_v<const signed short, bzt::make_signed_t<const unsigned short>>);
-    static_assert(std::is_same_v<const signed int, bzt::make_signed_t<const signed int>>);
-    static_assert(std::is_same_v<const signed int, bzt::make_signed_t<const unsigned int>>);
-    static_assert(std::is_same_v<const signed long, bzt::make_signed_t<const signed long>>);
-    static_assert(std::is_same_v<const signed long, bzt::make_signed_t<const unsigned long>>);
-    static_assert(std::is_same_v<const signed long long, bzt::make_signed_t<const signed long long>>);
-    static_assert(std::is_same_v<const signed long long, bzt::make_signed_t<const unsigned long long>>);
+    static_assert(bzt::is_same_v<const signed char, bzt::make_signed_t<const signed char>>);
+    static_assert(bzt::is_same_v<const signed char, bzt::make_signed_t<const unsigned char>>);
+    static_assert(bzt::is_same_v<const signed short, bzt::make_signed_t<const signed short>>);
+    static_assert(bzt::is_same_v<const signed short, bzt::make_signed_t<const unsigned short>>);
+    static_assert(bzt::is_same_v<const signed int, bzt::make_signed_t<const signed int>>);
+    static_assert(bzt::is_same_v<const signed int, bzt::make_signed_t<const unsigned int>>);
+    static_assert(bzt::is_same_v<const signed long, bzt::make_signed_t<const signed long>>);
+    static_assert(bzt::is_same_v<const signed long, bzt::make_signed_t<const unsigned long>>);
+    static_assert(bzt::is_same_v<const signed long long, bzt::make_signed_t<const signed long long>>);
+    static_assert(bzt::is_same_v<const signed long long, bzt::make_signed_t<const unsigned long long>>);
 
-    static_assert(std::is_same_v<volatile signed char, bzt::make_signed_t<volatile signed char>>);
-    static_assert(std::is_same_v<volatile signed char, bzt::make_signed_t<volatile unsigned char>>);
-    static_assert(std::is_same_v<volatile signed short, bzt::make_signed_t<volatile signed short>>);
-    static_assert(std::is_same_v<volatile signed short, bzt::make_signed_t<volatile unsigned short>>);
-    static_assert(std::is_same_v<volatile signed int, bzt::make_signed_t<volatile signed int>>);
-    static_assert(std::is_same_v<volatile signed int, bzt::make_signed_t<volatile unsigned int>>);
-    static_assert(std::is_same_v<volatile signed long, bzt::make_signed_t<volatile signed long>>);
-    static_assert(std::is_same_v<volatile signed long, bzt::make_signed_t<volatile unsigned long>>);
-    static_assert(std::is_same_v<volatile signed long long, bzt::make_signed_t<volatile signed long long>>);
-    static_assert(std::is_same_v<volatile signed long long, bzt::make_signed_t<volatile unsigned long long>>);
+    static_assert(bzt::is_same_v<volatile signed char, bzt::make_signed_t<volatile signed char>>);
+    static_assert(bzt::is_same_v<volatile signed char, bzt::make_signed_t<volatile unsigned char>>);
+    static_assert(bzt::is_same_v<volatile signed short, bzt::make_signed_t<volatile signed short>>);
+    static_assert(bzt::is_same_v<volatile signed short, bzt::make_signed_t<volatile unsigned short>>);
+    static_assert(bzt::is_same_v<volatile signed int, bzt::make_signed_t<volatile signed int>>);
+    static_assert(bzt::is_same_v<volatile signed int, bzt::make_signed_t<volatile unsigned int>>);
+    static_assert(bzt::is_same_v<volatile signed long, bzt::make_signed_t<volatile signed long>>);
+    static_assert(bzt::is_same_v<volatile signed long, bzt::make_signed_t<volatile unsigned long>>);
+    static_assert(bzt::is_same_v<volatile signed long long, bzt::make_signed_t<volatile signed long long>>);
+    static_assert(bzt::is_same_v<volatile signed long long, bzt::make_signed_t<volatile unsigned long long>>);
 
-    static_assert(std::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile signed char>>);
-    static_assert(std::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile unsigned char>>);
-    static_assert(std::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile signed short>>);
-    static_assert(std::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile unsigned short>>);
-    static_assert(std::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile signed int>>);
-    static_assert(std::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile unsigned int>>);
-    static_assert(std::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile signed long>>);
-    static_assert(std::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile unsigned long>>);
-    static_assert(std::is_same_v<const volatile signed long long, bzt::make_signed_t<const volatile signed long long>>);
-    static_assert(std::is_same_v<const volatile signed long long, bzt::make_signed_t<const volatile unsigned long long>>);
+    static_assert(bzt::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile signed char>>);
+    static_assert(bzt::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile unsigned char>>);
+    static_assert(bzt::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile signed short>>);
+    static_assert(bzt::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile unsigned short>>);
+    static_assert(bzt::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile signed int>>);
+    static_assert(bzt::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile unsigned int>>);
+    static_assert(bzt::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile signed long>>);
+    static_assert(bzt::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile unsigned long>>);
+    static_assert(bzt::is_same_v<const volatile signed long long, bzt::make_signed_t<const volatile signed long long>>);
+    static_assert(bzt::is_same_v<const volatile signed long long, bzt::make_signed_t<const volatile unsigned long long>>);
 
-    static_assert(std::is_same_v<signed char, bzt::make_signed_t<EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<signed char, bzt::make_signed_t<EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<signed short, bzt::make_signed_t<EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<signed short, bzt::make_signed_t<EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<signed int, bzt::make_signed_t<EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<signed int, bzt::make_signed_t<EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<signed long, bzt::make_signed_t<EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<signed long, bzt::make_signed_t<EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<signed char, bzt::make_signed_t<EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<signed char, bzt::make_signed_t<EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<signed short, bzt::make_signed_t<EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<signed short, bzt::make_signed_t<EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<signed int, bzt::make_signed_t<EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<signed int, bzt::make_signed_t<EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<signed long, bzt::make_signed_t<EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<signed long, bzt::make_signed_t<EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             signed long, signed long long>,
             bzt::make_signed_t<EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             signed long, signed long long>,
             bzt::make_signed_t<EnumWithUnderlyingULongLong>>);
 
-    static_assert(std::is_same_v<const signed char, bzt::make_signed_t<const EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<const signed char, bzt::make_signed_t<const EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<const signed short, bzt::make_signed_t<const EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<const signed short, bzt::make_signed_t<const EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<const signed int, bzt::make_signed_t<const EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<const signed int, bzt::make_signed_t<const EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<const signed long, bzt::make_signed_t<const EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<const signed long, bzt::make_signed_t<const EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<const signed char, bzt::make_signed_t<const EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<const signed char, bzt::make_signed_t<const EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<const signed short, bzt::make_signed_t<const EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<const signed short, bzt::make_signed_t<const EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<const signed int, bzt::make_signed_t<const EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<const signed int, bzt::make_signed_t<const EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<const signed long, bzt::make_signed_t<const EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<const signed long, bzt::make_signed_t<const EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const signed long, const signed long long>,
             bzt::make_signed_t<const EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const signed long, const signed long long>,
             bzt::make_signed_t<const EnumWithUnderlyingULongLong>>);
 
-    static_assert(std::is_same_v<volatile signed char, bzt::make_signed_t<volatile EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<volatile signed char, bzt::make_signed_t<volatile EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<volatile signed short, bzt::make_signed_t<volatile EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<volatile signed short, bzt::make_signed_t<volatile EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<volatile signed int, bzt::make_signed_t<volatile EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<volatile signed int, bzt::make_signed_t<volatile EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<volatile signed long, bzt::make_signed_t<volatile EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<volatile signed long, bzt::make_signed_t<volatile EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<volatile signed char, bzt::make_signed_t<volatile EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<volatile signed char, bzt::make_signed_t<volatile EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<volatile signed short, bzt::make_signed_t<volatile EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<volatile signed short, bzt::make_signed_t<volatile EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<volatile signed int, bzt::make_signed_t<volatile EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<volatile signed int, bzt::make_signed_t<volatile EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<volatile signed long, bzt::make_signed_t<volatile EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<volatile signed long, bzt::make_signed_t<volatile EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             volatile signed long, volatile signed long long>,
             bzt::make_signed_t<volatile EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             volatile signed long, volatile signed long long>,
             bzt::make_signed_t<volatile EnumWithUnderlyingULongLong>>);
 
-    static_assert(std::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<const volatile signed char, bzt::make_signed_t<const volatile EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<const volatile signed short, bzt::make_signed_t<const volatile EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<const volatile signed int, bzt::make_signed_t<const volatile EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<const volatile signed long, bzt::make_signed_t<const volatile EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const volatile signed long, const volatile signed long long>,
             bzt::make_signed_t<const volatile EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const volatile signed long, const volatile signed long long>,
             bzt::make_signed_t<const volatile EnumWithUnderlyingULongLong>>);
 
@@ -1209,107 +1209,107 @@ namespace
 }
 
 [[maybe_unused]] void test_make_unsigned() {
-    static_assert(std::is_same_v<unsigned char, std::make_unsigned_t<signed char>>);
-    static_assert(std::is_same_v<unsigned char, bzt::make_unsigned_t<unsigned char>>);
-    static_assert(std::is_same_v<unsigned short, bzt::make_unsigned_t<signed short>>);
-    static_assert(std::is_same_v<unsigned short, bzt::make_unsigned_t<unsigned short>>);
-    static_assert(std::is_same_v<unsigned int, bzt::make_unsigned_t<signed int>>);
-    static_assert(std::is_same_v<unsigned int, bzt::make_unsigned_t<unsigned int>>);
-    static_assert(std::is_same_v<unsigned long, bzt::make_unsigned_t<signed long>>);
-    static_assert(std::is_same_v<unsigned long, bzt::make_unsigned_t<unsigned long>>);
-    static_assert(std::is_same_v<unsigned long long, bzt::make_unsigned_t<signed long long>>);
-    static_assert(std::is_same_v<unsigned long long, bzt::make_unsigned_t<unsigned long long>>);
+    static_assert(bzt::is_same_v<unsigned char, std::make_unsigned_t<signed char>>);
+    static_assert(bzt::is_same_v<unsigned char, bzt::make_unsigned_t<unsigned char>>);
+    static_assert(bzt::is_same_v<unsigned short, bzt::make_unsigned_t<signed short>>);
+    static_assert(bzt::is_same_v<unsigned short, bzt::make_unsigned_t<unsigned short>>);
+    static_assert(bzt::is_same_v<unsigned int, bzt::make_unsigned_t<signed int>>);
+    static_assert(bzt::is_same_v<unsigned int, bzt::make_unsigned_t<unsigned int>>);
+    static_assert(bzt::is_same_v<unsigned long, bzt::make_unsigned_t<signed long>>);
+    static_assert(bzt::is_same_v<unsigned long, bzt::make_unsigned_t<unsigned long>>);
+    static_assert(bzt::is_same_v<unsigned long long, bzt::make_unsigned_t<signed long long>>);
+    static_assert(bzt::is_same_v<unsigned long long, bzt::make_unsigned_t<unsigned long long>>);
 
-    static_assert(std::is_same_v<const unsigned char, bzt::make_unsigned_t<const signed char>>);
-    static_assert(std::is_same_v<const unsigned char, bzt::make_unsigned_t<const unsigned char>>);
-    static_assert(std::is_same_v<const unsigned short, bzt::make_unsigned_t<const signed short>>);
-    static_assert(std::is_same_v<const unsigned short, bzt::make_unsigned_t<const unsigned short>>);
-    static_assert(std::is_same_v<const unsigned int, bzt::make_unsigned_t<const signed int>>);
-    static_assert(std::is_same_v<const unsigned int, bzt::make_unsigned_t<const unsigned int>>);
-    static_assert(std::is_same_v<const unsigned long, bzt::make_unsigned_t<const signed long>>);
-    static_assert(std::is_same_v<const unsigned long, bzt::make_unsigned_t<const unsigned long>>);
-    static_assert(std::is_same_v<const unsigned long long, bzt::make_unsigned_t<const signed long long>>);
-    static_assert(std::is_same_v<const unsigned long long, bzt::make_unsigned_t<const unsigned long long>>);
+    static_assert(bzt::is_same_v<const unsigned char, bzt::make_unsigned_t<const signed char>>);
+    static_assert(bzt::is_same_v<const unsigned char, bzt::make_unsigned_t<const unsigned char>>);
+    static_assert(bzt::is_same_v<const unsigned short, bzt::make_unsigned_t<const signed short>>);
+    static_assert(bzt::is_same_v<const unsigned short, bzt::make_unsigned_t<const unsigned short>>);
+    static_assert(bzt::is_same_v<const unsigned int, bzt::make_unsigned_t<const signed int>>);
+    static_assert(bzt::is_same_v<const unsigned int, bzt::make_unsigned_t<const unsigned int>>);
+    static_assert(bzt::is_same_v<const unsigned long, bzt::make_unsigned_t<const signed long>>);
+    static_assert(bzt::is_same_v<const unsigned long, bzt::make_unsigned_t<const unsigned long>>);
+    static_assert(bzt::is_same_v<const unsigned long long, bzt::make_unsigned_t<const signed long long>>);
+    static_assert(bzt::is_same_v<const unsigned long long, bzt::make_unsigned_t<const unsigned long long>>);
 
-    static_assert(std::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile signed char>>);
-    static_assert(std::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile unsigned char>>);
-    static_assert(std::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile signed short>>);
-    static_assert(std::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile unsigned short>>);
-    static_assert(std::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile signed int>>);
-    static_assert(std::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile unsigned int>>);
-    static_assert(std::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile signed long>>);
-    static_assert(std::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile unsigned long>>);
-    static_assert(std::is_same_v<volatile unsigned long long, bzt::make_unsigned_t<volatile signed long long>>);
-    static_assert(std::is_same_v<volatile unsigned long long, bzt::make_unsigned_t<volatile unsigned long long>>);
+    static_assert(bzt::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile signed char>>);
+    static_assert(bzt::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile unsigned char>>);
+    static_assert(bzt::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile signed short>>);
+    static_assert(bzt::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile unsigned short>>);
+    static_assert(bzt::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile signed int>>);
+    static_assert(bzt::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile unsigned int>>);
+    static_assert(bzt::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile signed long>>);
+    static_assert(bzt::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile unsigned long>>);
+    static_assert(bzt::is_same_v<volatile unsigned long long, bzt::make_unsigned_t<volatile signed long long>>);
+    static_assert(bzt::is_same_v<volatile unsigned long long, bzt::make_unsigned_t<volatile unsigned long long>>);
 
-    static_assert(std::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile signed char>>);
-    static_assert(std::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile unsigned char>>);
-    static_assert(std::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile signed short>>);
-    static_assert(std::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile unsigned short>>);
-    static_assert(std::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile signed int>>);
-    static_assert(std::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile unsigned int>>);
-    static_assert(std::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile signed long>>);
-    static_assert(std::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile unsigned long>>);
-    static_assert(std::is_same_v<const volatile unsigned long long, bzt::make_unsigned_t<const volatile signed long long>>);
-    static_assert(std::is_same_v<const volatile unsigned long long, bzt::make_unsigned_t<const volatile unsigned long long>>);
+    static_assert(bzt::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile signed char>>);
+    static_assert(bzt::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile unsigned char>>);
+    static_assert(bzt::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile signed short>>);
+    static_assert(bzt::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile unsigned short>>);
+    static_assert(bzt::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile signed int>>);
+    static_assert(bzt::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile unsigned int>>);
+    static_assert(bzt::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile signed long>>);
+    static_assert(bzt::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile unsigned long>>);
+    static_assert(bzt::is_same_v<const volatile unsigned long long, bzt::make_unsigned_t<const volatile signed long long>>);
+    static_assert(bzt::is_same_v<const volatile unsigned long long, bzt::make_unsigned_t<const volatile unsigned long long>>);
 
-    static_assert(std::is_same_v<unsigned char, bzt::make_unsigned_t<EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<unsigned char, bzt::make_unsigned_t<EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<unsigned short, bzt::make_unsigned_t<EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<unsigned short, bzt::make_unsigned_t<EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<unsigned int, bzt::make_unsigned_t<EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<unsigned int, bzt::make_unsigned_t<EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<unsigned long, bzt::make_unsigned_t<EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<unsigned long, bzt::make_unsigned_t<EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<unsigned char, bzt::make_unsigned_t<EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<unsigned char, bzt::make_unsigned_t<EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<unsigned short, bzt::make_unsigned_t<EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<unsigned short, bzt::make_unsigned_t<EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<unsigned int, bzt::make_unsigned_t<EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<unsigned int, bzt::make_unsigned_t<EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<unsigned long, bzt::make_unsigned_t<EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<unsigned long, bzt::make_unsigned_t<EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             unsigned long, unsigned long long>,
             bzt::make_unsigned_t<EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             unsigned long, unsigned long long>,
             bzt::make_unsigned_t<EnumWithUnderlyingULongLong>>);
 
-    static_assert(std::is_same_v<const unsigned char, bzt::make_unsigned_t<const EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<const unsigned char, bzt::make_unsigned_t<const EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<const unsigned short, bzt::make_unsigned_t<const EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<const unsigned short, bzt::make_unsigned_t<const EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<const unsigned int, bzt::make_unsigned_t<const EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<const unsigned int, bzt::make_unsigned_t<const EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<const unsigned long, bzt::make_unsigned_t<const EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<const unsigned long, bzt::make_unsigned_t<const EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<const unsigned char, bzt::make_unsigned_t<const EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<const unsigned char, bzt::make_unsigned_t<const EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<const unsigned short, bzt::make_unsigned_t<const EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<const unsigned short, bzt::make_unsigned_t<const EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<const unsigned int, bzt::make_unsigned_t<const EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<const unsigned int, bzt::make_unsigned_t<const EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<const unsigned long, bzt::make_unsigned_t<const EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<const unsigned long, bzt::make_unsigned_t<const EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const unsigned long, const unsigned long long>,
             bzt::make_unsigned_t<const EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const unsigned long, const unsigned long long>,
             bzt::make_unsigned_t<const EnumWithUnderlyingULongLong>>);
 
-    static_assert(std::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<volatile unsigned char, bzt::make_unsigned_t<volatile EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<volatile unsigned short, bzt::make_unsigned_t<volatile EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<volatile unsigned int, bzt::make_unsigned_t<volatile EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<volatile unsigned long, bzt::make_unsigned_t<volatile EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             volatile unsigned long, volatile unsigned long long>,
             bzt::make_unsigned_t<volatile EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             volatile unsigned long, volatile unsigned long long>,
             bzt::make_unsigned_t<volatile EnumWithUnderlyingULongLong>>);
 
-    static_assert(std::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<const volatile unsigned char, bzt::make_unsigned_t<const volatile EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<const volatile unsigned short, bzt::make_unsigned_t<const volatile EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<const volatile unsigned int, bzt::make_unsigned_t<const volatile EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<const volatile unsigned long, bzt::make_unsigned_t<const volatile EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const volatile unsigned long, const volatile unsigned long long>,
             bzt::make_unsigned_t<const volatile EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
+    static_assert(bzt::is_same_v<std::conditional_t<sizeof(long) == sizeof(long long),
             const volatile unsigned long, const volatile unsigned long long>,
             bzt::make_unsigned_t<const volatile EnumWithUnderlyingULongLong>>);
 
@@ -2006,38 +2006,38 @@ namespace
 
 [[maybe_unused]] void test_decay()
 {
-    static_assert(std::is_same_v<int, bzt::decay_t<int>>);
-    static_assert(std::is_same_v<int, bzt::decay_t<int &>>);
-    static_assert(std::is_same_v<int, bzt::decay_t<int &&>>);
-    static_assert(std::is_same_v<int, bzt::decay_t<const int &>>);
-    static_assert(std::is_same_v<int *, bzt::decay_t<int[]>>);
-    static_assert(std::is_same_v<int *, bzt::decay_t<int[2]>>);
-    static_assert(std::is_same_v<int (*)(int), bzt::decay_t<int(int)>>);
+    static_assert(bzt::is_same_v<int, bzt::decay_t<int>>);
+    static_assert(bzt::is_same_v<int, bzt::decay_t<int &>>);
+    static_assert(bzt::is_same_v<int, bzt::decay_t<int &&>>);
+    static_assert(bzt::is_same_v<int, bzt::decay_t<const int &>>);
+    static_assert(bzt::is_same_v<int *, bzt::decay_t<int[]>>);
+    static_assert(bzt::is_same_v<int *, bzt::decay_t<int[2]>>);
+    static_assert(bzt::is_same_v<int (*)(int), bzt::decay_t<int(int)>>);
 }
 
 [[maybe_unused]] void test_remove_cvref()
 {
-    static_assert(std::is_same_v<int, bzt::remove_cvref_t<int>>);
-    static_assert(std::is_same_v<int, bzt::remove_cvref_t<int&>>);
-    static_assert(std::is_same_v<int, bzt::remove_cvref_t<int&&>>);
-    static_assert(std::is_same_v<int, bzt::remove_cvref_t<const int&>>);
-    static_assert(std::is_same_v<int[2], bzt::remove_cvref_t<const int[2]>>);
-    static_assert(std::is_same_v<int[2], bzt::remove_cvref_t<const int(&)[2]>>);
-    static_assert(std::is_same_v<int(int), bzt::remove_cvref_t<int(int)>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_cvref_t<int>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_cvref_t<int&>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_cvref_t<int&&>>);
+    static_assert(bzt::is_same_v<int, bzt::remove_cvref_t<const int&>>);
+    static_assert(bzt::is_same_v<int[2], bzt::remove_cvref_t<const int[2]>>);
+    static_assert(bzt::is_same_v<int[2], bzt::remove_cvref_t<const int(&)[2]>>);
+    static_assert(bzt::is_same_v<int(int), bzt::remove_cvref_t<int(int)>>);
 }
 
 [[maybe_unused]] void test_underlying_type()
 {
-    static_assert(std::is_same_v<char, bzt::underlying_type_t<EnumWithUnderlyingChar>>);
-    static_assert(std::is_same_v<short, bzt::underlying_type_t<EnumWithUnderlyingShort>>);
-    static_assert(std::is_same_v<int, bzt::underlying_type_t<EnumWithUnderlyingInt>>);
-    static_assert(std::is_same_v<long, bzt::underlying_type_t<EnumWithUnderlyingLong>>);
-    static_assert(std::is_same_v<long long, bzt::underlying_type_t<EnumWithUnderlyingLongLong>>);
-    static_assert(std::is_same_v<unsigned char, bzt::underlying_type_t<EnumWithUnderlyingUChar>>);
-    static_assert(std::is_same_v<unsigned short, bzt::underlying_type_t<EnumWithUnderlyingUShort>>);
-    static_assert(std::is_same_v<unsigned int, bzt::underlying_type_t<EnumWithUnderlyingUInt>>);
-    static_assert(std::is_same_v<unsigned long, bzt::underlying_type_t<EnumWithUnderlyingULong>>);
-    static_assert(std::is_same_v<unsigned long long, bzt::underlying_type_t<EnumWithUnderlyingULongLong>>);
+    static_assert(bzt::is_same_v<char, bzt::underlying_type_t<EnumWithUnderlyingChar>>);
+    static_assert(bzt::is_same_v<short, bzt::underlying_type_t<EnumWithUnderlyingShort>>);
+    static_assert(bzt::is_same_v<int, bzt::underlying_type_t<EnumWithUnderlyingInt>>);
+    static_assert(bzt::is_same_v<long, bzt::underlying_type_t<EnumWithUnderlyingLong>>);
+    static_assert(bzt::is_same_v<long long, bzt::underlying_type_t<EnumWithUnderlyingLongLong>>);
+    static_assert(bzt::is_same_v<unsigned char, bzt::underlying_type_t<EnumWithUnderlyingUChar>>);
+    static_assert(bzt::is_same_v<unsigned short, bzt::underlying_type_t<EnumWithUnderlyingUShort>>);
+    static_assert(bzt::is_same_v<unsigned int, bzt::underlying_type_t<EnumWithUnderlyingUInt>>);
+    static_assert(bzt::is_same_v<unsigned long, bzt::underlying_type_t<EnumWithUnderlyingULong>>);
+    static_assert(bzt::is_same_v<unsigned long long, bzt::underlying_type_t<EnumWithUnderlyingULongLong>>);
 }
 
 int main() {return EXIT_SUCCESS;}

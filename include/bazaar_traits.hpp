@@ -23,6 +23,10 @@
 #include "logical_operators.hpp"
 #include "type_list.hpp"
 
+// Comment this line to use handwritten implementation of some traits
+// instead of relying on the compiler to provides them trough keywords.
+#define USE_COMPILER_SUPPORT_WHEN_POSSIBLE
+
 namespace bazaar::traits {
 
     //-------------------------------------------------------------------------------------------
@@ -492,7 +496,8 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_union_v{is_union<Tp>::value};
 
     // Is class
-#if (__has_feature(is_class) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_class) || defined(_LIBCPP_COMPILER_GCC)) \
+    && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp> struct is_class : public bool_constant<__is_class(Tp)>{};
 #else
     namespace impl
@@ -501,15 +506,17 @@ namespace bazaar::traits {
         template<typename Tp, typename = void_t<int Tp::*>> true_type is_class_test(int);
         template<typename> is_not_class_type is_class_test(...);
     }
-    template<typename Tp> struct is_class : public
-            is_not_same<decltype(impl::is_class_test<Tp>(0)), impl::is_not_class_type>{};
+    template<typename Tp> struct is_class : public conjunction<negation<is_union<Tp>>,
+            is_not_same<decltype(impl::is_class_test<Tp>(0)), impl::is_not_class_type>>
+            {};
 #endif
 
     template<typename Tp>
     [[maybe_unused]] inline constexpr auto is_class_v{is_class<Tp>::value};
 
     // Is enum
-#if (__has_feature(is_enum) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_enum) || defined(_LIBCPP_COMPILER_GCC)) \
+    && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp> struct is_enum : public bool_constant<__is_enum(Tp)>{};
 #else
     template<typename Tp> struct is_enum : public negation<disjunction<
@@ -1131,7 +1138,8 @@ namespace bazaar::traits {
     auto is_trivially_destructible_v{is_trivially_destructible<Tp>::value};
 
     // Is trivially copyable
-#if (__has_feature(is_trivially_copyable) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_trivially_copyable) || defined(_LIBCPP_COMPILER_GCC)) \
+        && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template <typename Tp>
     struct is_trivially_copyable : public bool_constant<__is_trivially_copyable(Tp)> {
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
@@ -1168,7 +1176,8 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_trivially_copyable_v{is_trivially_copyable<Tp>::value};
 
     // Is trivial
-#if (__has_feature(is_trivial) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_trivial) || defined(_LIBCPP_COMPILER_GCC)) \
+        && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_trivial : public bool_constant<__is_trivial(Tp)> {
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
@@ -1177,7 +1186,8 @@ namespace bazaar::traits {
 #else
     template <typename Tp>
     struct is_trivial : public disjunction<is_scalar<Tp>,
-            conjunction<is_trivially_copyable<Tp>, is_trivially_default_constructible<Tp>>>{
+            conjunction<is_trivially_copyable<remove_cv_t<remove_all_extents_t<Tp>>>,
+                is_trivially_default_constructible<remove_cv_t<remove_all_extents_t<Tp>>>>>{
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
     };
@@ -1187,7 +1197,8 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_trivial_v{is_trivial<Tp>::value};
 
     // Is standard layout
-#if (__has_feature(is_standard_layout) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_standard_layout) || defined(_LIBCPP_COMPILER_GCC)) \
+        && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_standard_layout : public bool_constant<__is_standard_layout(Tp)> {
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
@@ -1205,7 +1216,8 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_standard_layout_v{is_standard_layout<Tp>::value};
 
     // Is empty
-#if (__has_feature(is_empty) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_empty) || defined(_LIBCPP_COMPILER_GCC)) \
+        && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_empty : public bool_constant<__is_empty(Tp)> {};
 #else
@@ -1231,7 +1243,8 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_empty_v{is_empty<Tp>::value};
 
     // Is polymorphic
-#if (__has_feature(is_polymorphic) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_polymorphic) || defined(_LIBCPP_COMPILER_GCC)) \
+        && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_polymorphic : public bool_constant<__is_polymorphic(Tp)>{};
 #else
@@ -1473,6 +1486,10 @@ namespace bazaar::traits {
     //-------------------------------------------------------------------------------------------
 
     // Is base of
+#if defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
+    template<typename Base, typename Derived>
+    struct is_base_of : public bool_constant<__is_base_of(Base, Derived)>{};
+#else
     namespace impl
     {
         template<typename Base>
@@ -1490,12 +1507,10 @@ namespace bazaar::traits {
                 public is_base_of_helper<Base,Derived>{};
     }
 
-//    template<typename Base, typename Derived>
-//    struct is_base_of : public conjunction<is_class<Base>, is_class<Derived>,
-//            impl::is_base_of_impl<Base, Derived>> {};
-
     template<typename Base, typename Derived>
-    struct is_base_of : public bool_constant<__is_base_of(Base, Derived)>{};
+    struct is_base_of : public conjunction<is_class<Base>, is_class<Derived>,
+            impl::is_base_of_impl<Base, Derived>> {};
+#endif
 
     template<typename Base, typename Derived>
     [[maybe_unused]] static constexpr auto is_base_of_v{is_base_of<Base, Derived>::value};
