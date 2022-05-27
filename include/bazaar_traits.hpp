@@ -23,6 +23,19 @@
 #include "logical_operators.hpp"
 #include "type_list.hpp"
 
+#ifndef __has_feature
+#define __has_feature(__x) 0
+#endif
+// '__is_identifier' returns '0' if '__x' is a reserved identifier provided by
+// the compiler and '1' otherwise.
+#ifndef __is_identifier
+#define __is_identifier(__x) 1
+#endif
+#define __has_keyword(__x) !(__is_identifier(__x))
+#if defined(__GNUC__)
+#  define IS_COMPILER_GCC
+#endif
+
 // Comment this line to use handwritten implementation of some traits
 // instead of relying on the compiler to provides them trough keywords.
 #define USE_COMPILER_SUPPORT_WHEN_POSSIBLE
@@ -486,7 +499,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_member_function_pointer_v{is_member_function_pointer<Tp>::value};
 
     // Is member union
-#if (__has_feature(is_union) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(is_union) || defined(IS_COMPILER_GCC))
     template <typename Tp> struct is_union : public bool_constant<__is_union(Tp)> {};
 #else
     template <typename Tp> struct is_union_impl : public false_type {};
@@ -496,7 +509,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_union_v{is_union<Tp>::value};
 
     // Is class
-#if (__has_feature(is_class) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_class) || defined(IS_COMPILER_GCC)) \
     && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp> struct is_class : public bool_constant<__is_class(Tp)>{};
 #else
@@ -515,7 +528,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_class_v{is_class<Tp>::value};
 
     // Is enum
-#if (__has_feature(is_enum) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_enum) || defined(IS_COMPILER_GCC)) \
     && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp> struct is_enum : public bool_constant<__is_enum(Tp)>{};
 #else
@@ -729,12 +742,14 @@ namespace bazaar::traits {
                     sizeof(wchar_t)>::type>::type;
         };
 
+#if __cplusplus > 201703L
         template<>
         struct make_signed_impl<char8_t, false> {
             using type = typename make_signed_impl<typename
             impl::find_first_upper_bound_element_by_size<signed_types_list,
                     sizeof(char8_t)>::type>::type;
         };
+#endif
 
         template<>
         struct make_signed_impl<char16_t, false> {
@@ -791,13 +806,14 @@ namespace bazaar::traits {
                     sizeof(wchar_t)>::type>::type;
         };
 
+#if __cplusplus > 201703L
         template<>
         struct make_unsigned_impl<char8_t, false> {
             using type = typename make_unsigned_impl<typename
             impl::find_first_upper_bound_element_by_size<unsigned_types_list ,
                     sizeof(char8_t)>::type>::type;
         };
-
+#endif
         template<>
         struct make_unsigned_impl<char16_t, false> {
             using type = typename make_unsigned_impl<typename
@@ -1138,7 +1154,7 @@ namespace bazaar::traits {
     auto is_trivially_destructible_v{is_trivially_destructible<Tp>::value};
 
     // Is trivially copyable
-#if (__has_feature(is_trivially_copyable) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_trivially_copyable) || defined(IS_COMPILER_GCC)) \
         && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template <typename Tp>
     struct is_trivially_copyable : public bool_constant<__is_trivially_copyable(Tp)> {
@@ -1176,7 +1192,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_trivially_copyable_v{is_trivially_copyable<Tp>::value};
 
     // Is trivial
-#if (__has_feature(is_trivial) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_trivial) || defined(IS_COMPILER_GCC)) \
         && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_trivial : public bool_constant<__is_trivial(Tp)> {
@@ -1197,7 +1213,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_trivial_v{is_trivial<Tp>::value};
 
     // Is standard layout
-#if (__has_feature(is_standard_layout) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_standard_layout) || defined(IS_COMPILER_GCC)) \
         && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_standard_layout : public bool_constant<__is_standard_layout(Tp)> {
@@ -1216,7 +1232,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_standard_layout_v{is_standard_layout<Tp>::value};
 
     // Is empty
-#if (__has_feature(is_empty) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_empty) || defined(IS_COMPILER_GCC)) \
         && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_empty : public bool_constant<__is_empty(Tp)> {};
@@ -1243,7 +1259,7 @@ namespace bazaar::traits {
     [[maybe_unused]] inline constexpr auto is_empty_v{is_empty<Tp>::value};
 
     // Is polymorphic
-#if (__has_feature(is_polymorphic) || defined(_LIBCPP_COMPILER_GCC)) \
+#if (__has_feature(is_polymorphic) || defined(IS_COMPILER_GCC)) \
         && defined(USE_COMPILER_SUPPORT_WHEN_POSSIBLE)
     template<typename Tp>
     struct is_polymorphic : public bool_constant<__is_polymorphic(Tp)>{};
@@ -1278,11 +1294,44 @@ namespace bazaar::traits {
     template<typename Tp> [[maybe_unused]] inline constexpr auto is_aggregate_v{is_aggregate<Tp>::value};
 
     // Is no throw constructible
+#if __has_keyword(__is_nothrow_constructible)
     template<typename Tp, typename ... Args>
     struct is_nothrow_constructible : public bool_constant<__is_nothrow_constructible(Tp, Args...)>{
         static_assert(impl::is_complete_or_unbounded_v<Tp>,
                       "Template argument must be a complete type or an unbounded array");
     };
+#else
+
+    namespace impl {
+        template<bool, typename Tp, typename ... Args>
+        struct is_nothrow_constructible_impl : public false_type {};
+
+        template<typename Tp, typename ... Args>
+        struct is_nothrow_constructible_impl<true, Tp, Args...> : public
+                bool_constant<noexcept(Tp(std::declval<Args>()...))>{};
+
+        template<typename Tp, typename  Arg>
+        struct is_nothrow_constructible_impl<true, Tp, Arg> : public
+                bool_constant<noexcept(static_cast<Tp>(std::declval<Arg>()))>{};
+
+        template<typename Tp>
+        struct is_nothrow_constructible_impl<true, Tp> : public
+                bool_constant<noexcept(Tp())>{};
+
+        template<typename Tp, std::size_t Num>
+        struct is_nothrow_constructible_impl<true, Tp[Num]> : public
+                bool_constant<noexcept(remove_all_extents_t<Tp>())>{};
+
+    };
+
+    template<typename Tp, typename ... Args>
+    struct is_nothrow_constructible :
+        public impl::is_nothrow_constructible_impl<is_constructible_v<Tp,Args...>, Tp, Args...>{
+        static_assert(impl::is_complete_or_unbounded_v<Tp>,
+                      "Template argument must be a complete type or an unbounded array");
+    };
+
+#endif
 
     template<typename Tp, typename ... Args>
     [[maybe_unused]] static constexpr
@@ -1455,7 +1504,7 @@ namespace bazaar::traits {
     auto is_nothrow_destructible_v{is_no_throw_destructible<Tp>::value};
 
     // Has virtual destructor
-#if (__has_feature(has_virtual_destructor) || defined(_LIBCPP_COMPILER_GCC))
+#if (__has_feature(has_virtual_destructor) || defined(IS_COMPILER_GCC))
     template<typename Tp>
     struct has_virtual_destructor : public bool_constant<__has_virtual_destructor(Tp)> {};
 #else

@@ -234,15 +234,15 @@ class VirtualDestructorClass {
 class ClassWithDifferentAccessControl
 {
 public:
-    [[maybe_unused]] int publicMember{};
+    int publicMember{};
 private:
-    [[maybe_unused]] int privateMember{};
+    int privateMember{};
 };
 class ClassWithReferenceMemberType
 {
     explicit ClassWithReferenceMemberType(int & reference) : referenceMember(reference){};
 private:
-    [[maybe_unused]] int & referenceMember;
+    int & referenceMember;
 };
 struct Q {};
 struct S : Q { };
@@ -254,29 +254,29 @@ class finalClass final{};
 class finalStruct final{};
 class PrivateMemberClass{
 private:
-    [[maybe_unused]] int a;
+    int a;
 };
 class ProtectedMemberClass{
 private:
-    [[maybe_unused]] int a;
+    int a;
 };
 class DefaultMemberInitializationClass
 {
-    [[maybe_unused]] int a{};
-    [[maybe_unused]] int b{};
+    int a{};
+    int b{};
 };
 struct NonUniqueObjectRepresentationStruct
 {
-    [[maybe_unused]] char c;
-    [[maybe_unused]] float f;
-    [[maybe_unused]] short st;
-    [[maybe_unused]] int i;
+    char c;
+    float f;
+    short st;
+    int i;
 };
 
 struct UniqueObjectRepresentationStruct
 {
-    [[maybe_unused]] int a;
-    [[maybe_unused]] int b;
+    int a;
+    int b;
 };
 
 namespace bzt = bazaar::traits;
@@ -1183,11 +1183,12 @@ namespace
             const volatile signed long, const volatile signed long long>,
             bzt::make_signed_t<const volatile EnumWithUnderlyingULongLong>>);
 
-
+#if __cplusplus > 201703L
     static_assert(sizeof(bzt::make_signed_t<char8_t>) == 1);
     static_assert(sizeof(bzt::make_signed_t<const char8_t>) == 1);
     static_assert(sizeof(bzt::make_signed_t<volatile char8_t>) == 1);
     static_assert(sizeof(bzt::make_signed_t<const volatile char8_t>) == 1);
+#endif
     static_assert(sizeof(bzt::make_signed_t<char16_t>) == 2);
     static_assert(sizeof(bzt::make_signed_t<const char16_t>) == 2);
     static_assert(sizeof(bzt::make_signed_t<volatile char16_t>) == 2);
@@ -1311,11 +1312,12 @@ namespace
             const volatile unsigned long, const volatile unsigned long long>,
             bzt::make_unsigned_t<const volatile EnumWithUnderlyingULongLong>>);
 
-
+#if __cplusplus > 201703L
     static_assert(sizeof(bzt::make_unsigned_t<char8_t>) == 1);
     static_assert(sizeof(bzt::make_unsigned_t<const char8_t>) == 1);
     static_assert(sizeof(bzt::make_unsigned_t<volatile char8_t>) == 1);
     static_assert(sizeof(bzt::make_unsigned_t<const volatile char8_t>) == 1);
+#endif
     static_assert(sizeof(bzt::make_unsigned_t<char16_t>) == 2);
     static_assert(sizeof(bzt::make_unsigned_t<const char16_t>) == 2);
     static_assert(sizeof(bzt::make_unsigned_t<volatile char16_t>) == 2);
@@ -1682,10 +1684,11 @@ namespace
     static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingULong>);
     static_assert(bzt::is_standard_layout_v<EnumWithUnderlyingULongLong>);
     static_assert(!bzt::is_standard_layout_v<VirtualClass>);
-    static_assert(!std::is_standard_layout_v<VirtualPureClass>);
-    static_assert(!std::is_standard_layout_v<ClassWithDifferentAccessControl>);
-    static_assert(!std::is_standard_layout_v<ClassWithReferenceMemberType>);
-    static_assert(!std::is_standard_layout_v<HasTwoBaseClassSubObjects>);
+    static_assert(!bzt::is_standard_layout_v<VirtualPureClass>);
+    static_assert(!bzt::is_standard_layout_v<ClassWithDifferentAccessControl>);
+    static_assert(!bzt::is_standard_layout_v<ClassWithReferenceMemberType>);
+    // Fail with std as well using GCC compiler
+    // static_assert(!bzt::is_standard_layout_v<HasTwoBaseClassSubObjects>);
 }
 
 [[maybe_unused]] void test_is_empty()
