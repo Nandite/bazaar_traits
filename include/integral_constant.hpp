@@ -17,7 +17,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef BAZAAR_INTEGRAL_CONSTANT_HPP
+#define BAZAAR_INTEGRAL_CONSTANT_HPP
 
 namespace bazaar::traits
 {
@@ -43,3 +44,5 @@ namespace bazaar::traits
         using invert_bool_constant_t = typename invert_bool_constant<Tp>::type;
     }
 }
+
+#endif //BAZAAR_INTEGRAL_CONSTANT_HPP

@@ -17,7 +17,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#pragma once
+#ifndef BAZAAR_TRAITS_HPP
+#define BAZAAR_TRAITS_HPP
 
 #include "logical_operators.hpp"
 #include "type_list.hpp"
@@ -1686,3 +1687,5 @@ namespace bazaar::traits {
     template<typename Tp>
     using underlying_type_t [[maybe_unused]] = typename underlying_type<Tp>::type;
 }
+
+#endif //BAZAAR_TRAITS_HPP
