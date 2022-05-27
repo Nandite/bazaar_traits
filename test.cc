@@ -407,32 +407,30 @@ struct test_enable_if_with_sfinae<condition,
 }
 
 [[maybe_unused]] void test_rank() {
-    static_assert(std::rank_v<int> == bzt::rank_v<int>);
-    static_assert(std::rank_v<int[5]> == bzt::rank_v<int[5]>);
-    static_assert(std::rank_v<int[5][5]> == bzt::rank_v<int[5][5]>);
-    static_assert(std::rank_v<int[][5][5]> == bzt::rank_v<int[][5][5]>);
+    static_assert(0 == bzt::rank_v<int>);
+    static_assert(1 == bzt::rank_v<int[5]>);
+    static_assert(2 == bzt::rank_v<int[5][5]>);
+    static_assert(3 == bzt::rank_v<int[][5][5]>);
 
     [[maybe_unused]] int ary[][3]={};
-    static_assert(std::rank_v<decltype(ary[0])> == bzt::rank_v<decltype(ary[0])>);
+    static_assert(0 == bzt::rank_v<decltype(ary[0])>);
     static_assert(bzt::is_same_v<decltype(ary[0]), int(&)[3]>);
-    static_assert(std::rank_v<std::remove_cvref_t<decltype(ary[0])>>
-            == bzt::rank_v<bzt::remove_cvref_t<decltype(ary[0])>>);
+    static_assert(1 == bzt::rank_v<bzt::remove_cvref_t<decltype(ary[0])>>);
 }
 
 [[maybe_unused]] void test_extent() {
-    static_assert(std::extent_v<int[3]> == bzt::extent_v<int[3]>);
-    static_assert(std::extent_v<int[3][4], 0> == bzt::extent_v<int[3][4], 0>);
-    static_assert(std::extent_v<int[3][4], 1> == bzt::extent_v<int[3][4], 1>);
-    static_assert(std::extent_v<int[3][4], 2> == bzt::extent_v<int[3][4], 2>);
-    static_assert(std::extent_v<int[]> == bzt::extent_v<int[]>);
+    static_assert(3 == bzt::extent_v<int[3]>);
+    static_assert(3 == bzt::extent_v<int[3][4], 0>);
+    static_assert(4 == bzt::extent_v<int[3][4], 1>);
+    static_assert(0 == bzt::extent_v<int[3][4], 2>);
+    static_assert(0 == bzt::extent_v<int[]>);
 
     const int ints[] = {1,2,3,4};
-    static_assert(std::extent_v<decltype(ints)> == bzt::extent_v<decltype(ints)>);
+    static_assert(4 == bzt::extent_v<decltype(ints)>);
 
     [[maybe_unused]] int ary[][3]={};
-    static_assert(std::extent_v<decltype(ary[0])> == bzt::extent_v<decltype(ary[0])>);
-    static_assert(std::extent_v<std::remove_cvref_t<decltype(ary[0])>>
-                == bzt::extent_v<bzt::remove_cvref_t<decltype(ary[0])>>);
+    static_assert(0 == bzt::extent_v<decltype(ary[0])>);
+    static_assert(3 == bzt::extent_v<bzt::remove_cvref_t<decltype(ary[0])>>);
 }
 
 [[maybe_unused]] void test_remove_extent() {
@@ -458,23 +456,23 @@ struct test_enable_if_with_sfinae<condition,
 }
 
 [[maybe_unused]] void test_is_bounded_array() {
-    static_assert(std::is_bounded_array_v<Tp> == bzt::is_bounded_array_v<Tp>);
-    static_assert(std::is_bounded_array_v<Tp[]> == bzt::is_bounded_array_v<Tp[]>);
-    static_assert(std::is_bounded_array_v<Tp[3]> == bzt::is_bounded_array_v<Tp[3]>);
-    static_assert(std::is_bounded_array_v<float> == bzt::is_bounded_array_v<float>);
-    static_assert(std::is_bounded_array_v<int> == bzt::is_bounded_array_v<int>);
-    static_assert(std::is_bounded_array_v<int[]> == bzt::is_bounded_array_v<int[]>);
-    static_assert(std::is_bounded_array_v<int[3]> == bzt::is_bounded_array_v<int[3]>);
+    static_assert(!bzt::is_bounded_array_v<Tp>);
+    static_assert(!bzt::is_bounded_array_v<Tp[]>);
+    static_assert(bzt::is_bounded_array_v<Tp[3]>);
+    static_assert(!bzt::is_bounded_array_v<float>);
+    static_assert(!bzt::is_bounded_array_v<int>);
+    static_assert(!bzt::is_bounded_array_v<int[]>);
+    static_assert(bzt::is_bounded_array_v<int[3]>);
 }
 
 [[maybe_unused]] void test_is_unbounded_array() {
-    static_assert(std::is_unbounded_array_v<Tp> == bzt::is_unbounded_array_v<Tp>);
-    static_assert(std::is_unbounded_array_v<Tp[]> == bzt::is_unbounded_array_v<Tp[]>);
-    static_assert(std::is_unbounded_array_v<Tp[3]> == bzt::is_unbounded_array_v<Tp[3]>);
-    static_assert(std::is_unbounded_array_v<float> == bzt::is_unbounded_array_v<float>);
-    static_assert(std::is_unbounded_array_v<int> == bzt::is_unbounded_array_v<int>);
-    static_assert(std::is_unbounded_array_v<int[]> == bzt::is_unbounded_array_v<int[]>);
-    static_assert(std::is_unbounded_array_v<int[3]> == bzt::is_unbounded_array_v<int[3]>);
+    static_assert(!bzt::is_unbounded_array_v<Tp>);
+    static_assert(bzt::is_unbounded_array_v<Tp[]>);
+    static_assert(!bzt::is_unbounded_array_v<Tp[3]>);
+    static_assert(!bzt::is_unbounded_array_v<float>);
+    static_assert(!bzt::is_unbounded_array_v<int>);
+    static_assert(bzt::is_unbounded_array_v<int[]>);
+    static_assert(!bzt::is_unbounded_array_v<int[3]>);
 }
 
 [[maybe_unused]] void test_remove_reference() {
