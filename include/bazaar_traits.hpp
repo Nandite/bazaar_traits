@@ -881,6 +881,7 @@ namespace bazaar::traits {
         template<typename Tp, typename Up>
         using is_assignable_helper_t = decltype(std::declval<Tp>() = std::declval<Up>());
 
+        // Alternate design
 //        template<typename Tp, typename Up, typename = void_t<is_assignable_helper_t<Tp, Up>>>
 //        true_type is_assignable_test(int);
 //
@@ -900,6 +901,7 @@ namespace bazaar::traits {
         struct is_assignable_impl<Tp, Up, void_t<is_assignable_helper_t<Tp, Up>>> : public is_same<
                 is_assignable_helper_t<Tp, Up>, Tp> {};
 
+        // Alternate design
 //        template<typename Tp, typename Up>
 //        struct is_assignable_impl
 //        {
