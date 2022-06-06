@@ -22,19 +22,7 @@
 
 #include "logical_operators.hpp"
 #include "type_list.hpp"
-
-#ifndef __has_feature
-#define __has_feature(__x) 0
-#endif
-// '__is_identifier' returns '0' if '__x' is a reserved identifier provided by
-// the compiler and '1' otherwise.
-#ifndef __is_identifier
-#define __is_identifier(__x) 1
-#endif
-#define __has_keyword(__x) !(__is_identifier(__x))
-#if defined(__GNUC__)
-#  define IS_COMPILER_GCC
-#endif
+#include "macros.hpp"
 
 // Comment this line to use handwritten implementation of some traits
 // instead of relying on the compiler to provides them trough keywords.

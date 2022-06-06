@@ -17,7 +17,7 @@ available.
 ## Usage
 
 This repository is a standalone CMake project. You can open it with any IDE supporting CMakeLists. You can then compile
-the test target. Using a sufficiently modern IDE, you can take a look of the [tests cases file](test.cc) and get in live
+the test target. Using a sufficiently modern IDE, you can take a look of the [test files](tests) and get in live
 the results of the meta-functions calls.
 
 Depending on your compiler, you can get different results. Indeed, some traits require attributes that are only

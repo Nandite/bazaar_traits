@@ -3,4 +3,7 @@ project(bazaar_traits)
 
 set(CMAKE_CXX_STANDARD 17)
 include_directories(include)
-add_executable(Test_bazaar_traits test.cc include)
+add_executable(Test_helper_traits include tests/helper_traits.cc)
+add_executable(Test_logical_operators include tests/logical_operators.cc)
+add_executable(Test_integral_constant include tests/integral_constant.cc)
+add_executable(Test_bazaar_traits include tests/bazaar_traits.cc tests/classes.hpp)
