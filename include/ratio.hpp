@@ -88,20 +88,17 @@ namespace bazaar {
             constexpr static std::intmax_t xAbs{static_abs<X>::value};
             constexpr static std::intmax_t yAbs{static_abs<Y>::value};
             static_assert(X != nan && Y != nan && xAbs <= (max / yAbs), "overflow occurred during multiplication");
-        public:
             constexpr static std::intmax_t value{X * Y};
         };
 
         template<std::intmax_t X, std::intmax_t Y>
         struct overflow_checked_mul<X, Y, true> {
-        public:
             constexpr static std::intmax_t value{0};
         };
 
         template<std::intmax_t X, std::intmax_t Y>
         struct overflow_checked_div : public overflow_arithmetic {
             static_assert(X != nan && Y != nan && Y != 0, "overflow occurred during division");
-        public:
             constexpr static std::intmax_t value{X / Y};
         };
     }
