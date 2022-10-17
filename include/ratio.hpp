@@ -1,6 +1,21 @@
+// Copyright (c) 2022 Papa Libasse Sow.
+// https://github.com/Nandite/bazaar_traits
+// Distributed under the MIT Software License (X11 license).
 //
-// Created by user on 09/09/2022.
+// SPDX-License-Identifier: MIT
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of
+// the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef RATIO_HPP
 #define RATIO_HPP
@@ -21,10 +36,6 @@ namespace bazaar {
 
         template<>
         struct static_gcd<0, 0> : public traits::integral_constant<std::intmax_t, 1> {
-        };
-
-        template<std::intmax_t X, std::intmax_t Y>
-        struct static_lcm : public traits::integral_constant<std::intmax_t, X * Y / static_gcd<X, Y>::value> {
         };
 
         template<std::intmax_t X>
@@ -108,11 +119,11 @@ namespace bazaar {
         static_assert(impl::static_abs<Num>::value >= 0, "Numerator value is out of range");
         static_assert(Den != 0, "Trying to divide by zero");
         static_assert(impl::static_abs<Den>::value > 0, "Denominator value is out of range");
-        constexpr static std::intmax_t gcd{impl::static_gcd<Num, Den>::value};
         constexpr static std::intmax_t sa{impl::static_sign<Num>::value};
         constexpr static std::intmax_t sd{impl::static_sign<Den>::value};
         constexpr static std::intmax_t na{impl::static_abs<Num>::value};
         constexpr static std::intmax_t da{impl::static_abs<Den>::value};
+        constexpr static std::intmax_t gcd{impl::static_gcd<na, da>::value};
     public:
         constexpr static std::intmax_t num{sa * sd * na / gcd};
         constexpr static std::intmax_t den{da / gcd};
@@ -132,8 +143,8 @@ namespace bazaar {
     namespace impl {
         template<typename R1, typename R2, std::intmax_t gcdN1D2 = static_gcd<R1::num, R2::den>::value,
                 std::intmax_t gcdN2D1 = static_gcd<R2::num, R1::den>::value>
-        struct ratio_multiply_impl : public traits::identity<typename ratio<overflow_checked_mul<
-                R1::num / gcdN1D2, R2::num / gcdN2D1>::value,
+        struct ratio_multiply_impl : public traits::identity<typename ratio<
+                overflow_checked_mul<R1::num / gcdN1D2, R2::num / gcdN2D1>::value,
                 overflow_checked_mul<R1::den / gcdN2D1, R2::den / gcdN1D2>::value>::type> {
         };
 
@@ -151,13 +162,18 @@ namespace bazaar {
 
     namespace impl {
 
-        template<typename R1, typename R2, std::intmax_t gcdN1D2 = static_gcd<R1::num, R2::den>::value,
-                std::intmax_t gcdN2D1 = static_gcd<R2::num, R1::den>::value>
-        struct ratio_divide_impl : public traits::identity<typename ratio<overflow_checked_mul<
-                R1::num / gcdN1D2, R2::den / gcdN1D2>::value,
-                overflow_checked_mul<R1::den / gcdN2D1, R2::num / gcdN2D1>::value>::type> {
+        template<typename R1, typename R2, std::intmax_t gcdN1N2 = static_gcd<R1::num, R2::num>::value,
+                std::intmax_t gcdD1D2 = static_gcd<R1::den, R2::den>::value>
+        struct ratio_divide_impl : public traits::identity<typename ratio<
+                overflow_checked_mul<R1::num / gcdN1N2, R2::den / gcdD1D2>::value,
+                overflow_checked_mul<R2::num / gcdN1N2, R1::den / gcdD1D2>::value>::type> {
 
         };
+
+        // Alternative
+        // template<typename R1, typename R2>
+        // struct ratio_divide_impl : public ratio_multiply_impl<R1, ratio<R2::den, R2::num>> {
+        // };
 
         template<typename R1, typename R2>
         struct ratio_divide_checked_impl : public traits::identity<
@@ -169,7 +185,7 @@ namespace bazaar {
     }
 
     template<typename R1, typename R2>
-    using ratio_divide [[maybe_unused]] = typename impl::ratio_multiply_checked_impl<R1, R2>::type;
+    using ratio_divide [[maybe_unused]] = typename impl::ratio_divide_checked_impl<R1, R2>::type;
 
     namespace impl {
         template<typename R1, typename R2, std::intmax_t gcdN1N2 = static_gcd<R1::num, R2::num>::value,
@@ -283,7 +299,7 @@ namespace bazaar {
     };
 
     template<typename R1, typename R2>
-    [[maybe_unused]] inline constexpr auto ratio_less_equal_v{ratio_less<R1, R2>::value};
+    [[maybe_unused]] inline constexpr auto ratio_less_equal_v{ratio_less_equal<R1, R2>::value};
 
     template<typename R1, typename R2>
     struct ratio_greater : public ratio_less<R2, R1> {
